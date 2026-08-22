@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi App para Adultos Mayores</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+    <!-- MENÚ LATERAL -->
+    <div id="miMenuLateral" class="menu-lateral">
+        <a href="javascript:void(0)" class="boton-cerrar" onclick="cerrarMenu()">×</a>
+        <a href="#" onclick="cambiarSeccion('seccionMedicamentos')">💊 Medicinas</a>
+        <a href="#" onclick="cambiarSeccion('seccionFinanzas')">💰 Presupuesto</a>
+        <hr style="border-color: #4caf50; margin: 20px;">
+        <a href="#" style="color: #ffcdd2;" onclick="cerrarSesion()">Cerrar Sesión</a>
+    </div>
+
+    <!-- CABECERA SUPERIOR (Oculta por defecto) -->
+    <div id="cabeceraApp" class="cabecera" style="display: none;">
+        <span class="icono-hamburguesa" onclick="abrirMenu()">☰</span>
+        <h2>Mi Asistente</h2>
+    </div>
+
+    <!-- VISTA 1: INICIAR SESIÓN -->
+    <div id="vistaLogin" class="tarjeta">
+        <h2>Iniciar Sesión</h2>
+        <input type="text" id="loginUsuarioEmail" placeholder="Usuario o Correo electrónico">
+        <input type="password" id="loginPassword" placeholder="Contraseña">
+        <button onclick="iniciarSesion()">Ingresar</button>
+        
+        <div>
+            <a href="javascript:void(0)" class="enlace" onclick="mostrarVista('vistaRecuperar')">¿Olvidaste tu contraseña?</a>
+        </div>
+        <hr style="border-color: #a5d6a7; margin: 15px 0;">
+        <button class="btn-azul" onclick="mostrarVista('vistaRegistro')">Crear Cuenta Nueva</button>
+    </div>
+
+    <!-- VISTA 2: REGISTRO DE CUENTA -->
+    <div id="vistaRegistro" class="tarjeta" style="display: none;">
+        <h2>Crear Cuenta</h2>
+        
+        <input type="text" id="regNombreUsuario" placeholder="Nombre de usuario (ej: juan123)">
+        
+        <input type="email" id="regEmail" placeholder="Correo electrónico">
+        <input type="email" id="regConfirmEmail" placeholder="Confirmar Correo electrónico">
+        
+        <input type="password" id="regPassword" placeholder="Contraseña" oninput="validarContrasenaEnVivo()">
+        <p class="texto-ayuda" id="regPasswordHelp">Requisito: Mínimo 6 caracteres.</p>
+        
+        <input type="password" id="regConfirmPassword" placeholder="Confirmar Contraseña">
+        
+        <button class="btn-azul" onclick="registrarUsuario()">Registrarme</button>
+        <a href="javascript:void(0)" class="enlace" onclick="mostrarVista('vistaLogin')">← Volver al Inicio de Sesión</a>
+    </div>
+
+    <!-- VISTA 3: RECUPERAR CONTRASEÑA -->
+    <div id="vistaRecuperar" class="tarjeta" style="display: none;">
+        <h2>Recuperar Contraseña</h2>
+        <p style="font-size: 14px; color: #444;">Ingresa tu usuario o correo electrónico y te enviaremos un enlace para restablecer tu clave.</p>
+        <input type="text" id="recuperarEmailOUsuario" placeholder="Usuario o Correo electrónico">
+        <button onclick="recuperarContrasena()">Enviar Correo de Recuperación</button>
+        <a href="javascript:void(0)" class="enlace" onclick="mostrarVista('vistaLogin')">← Volver al Inicio de Sesión</a>
+    </div>
+
+    <!-- PANTALLA PRINCIPAL DE LA APP -->
+    <div id="pantallaApp" style="display: none;">
+        <div id="seccionMedicamentos" class="tarjeta">
+            <h2>Mis Medicamentos</h2>
+            <input type="text" id="campoMedicina" placeholder="Nombre de medicamento...">
+            <button>+ Agregar Medicamento</button>
+            <ul id="listaMedicinas"></ul>
+        </div>
+
+        <div id="seccionFinanzas" class="tarjeta" style="display: none;">
+            <h2>Calculador Mensual</h2>
+            <label><strong>Jubilación / Ingresos:</strong></label>
+            <input type="number" id="ingresoMensual" placeholder="Ej: 300000">
+            
+            <label><strong>Gasto Fijo:</strong></label>
+            <input type="text" id="nombreGasto" placeholder="Nombre (Ej: Luz)">
+            <input type="number" id="montoGasto" placeholder="Monto ($)">
+            <button>+ Agregar Gasto</button>
+
+            <div class="caja-resumen">
+                <p>Dinero libre para el mes:</p>
+                <h3 id="dineroLibre">$0</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carga de SDKs de Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+    <!-- Archivos del proyecto -->
+    <script src="firebase-config.js"></script>
+    <script src="autenticacion.js"></script>
+
+    <script>
+        function abrirMenu() { document.getElementById("miMenuLateral").style.width = "250px"; }
+        function cerrarMenu() { document.getElementById("miMenuLateral").style.width = "0"; }
+        function cambiarSeccion(idSeccion) {
+            document.getElementById("seccionMedicamentos").style.display = "none";
+            document.getElementById("seccionFinanzas").style.display = "none";
+            document.getElementById(idSeccion).style.display = "block";
+            cerrarMenu();
+        }
+    </script>
+</body>
+</html>
