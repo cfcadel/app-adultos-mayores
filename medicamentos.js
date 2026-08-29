@@ -32,23 +32,25 @@ function renderizarTabla(idEdicion = null) {
             <tr class="form-crear-medicamento" style="background-color: #fff9c4;">
                 <td style="padding: 5px;">
                     <label class="label-mobile" style="display:none; font-weight:bold; font-size:12px;">Nombre y Gramaje:</label>
-                    <input type="text" id="inputNombre" placeholder="Ej: Tafirol 500mg" style="width: 100%; box-sizing: border-box;">
+                    <input type="text" id="inputNombre" placeholder="Ej: Tafirol 500mg">
                 </td>
                 <td class="col-tomas-diarias" style="padding: 5px;">
                     <label class="label-mobile" style="display:none; font-weight:bold; font-size:12px;">Tomas Diarias:</label>
-                    <select id="selectVeces" style="width: 100%;">
+                    <select id="selectVeces">
                         ${generarOpcionesVeces(1)}
                     </select>
                 </td>
                 <td class="col-primera-toma" style="padding: 5px;">
                     <label class="label-mobile" style="display:none; font-weight:bold; font-size:12px;">1ª Toma:</label>
-                    <input type="time" id="inputPrimeraToma" style="width: 100%; box-sizing: border-box;">
+                    <input type="time" id="inputPrimeraToma">
                 </td>
-                <td class="col-horarios" style="padding: 5px; color: #777; font-size: 12px;"><i>Se calculará al guardar</i></td>
-                <td class="td-acciones" style="padding: 5px; text-align: center;">
+                <td class="col-horarios" style="padding: 5px; color: #777; font-size: 12px; text-align: center;">
+                    <i>Se calculará al guardar</i>
+                </td>
+                <td class="td-acciones" style="padding: 5px;">
                     <div class="contenedor-botones-form" style="width: 100%;">
-                        <button onclick="guardarNuevoMedicamento()" class="btn-guardar" style="background-color: #2e7d32; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Guardar</button>
-                        <button onclick="renderizarTabla()" class="btn-cancelar" style="background-color: #757575; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Cancelar</button>
+                        <button onclick="guardarNuevoMedicamento()" class="btn-guardar" style="background-color: #2e7d32; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold;">Guardar</button>
+                        <button onclick="renderizarTabla()" class="btn-cancelar" style="background-color: #757575; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold;">Cancelar</button>
                     </div>
                 </td>
             </tr>
@@ -62,21 +64,26 @@ function renderizarTabla(idEdicion = null) {
             tbody.innerHTML += `
                 <tr class="form-crear-medicamento" style="background-color: #e1f5fe;">
                     <td style="padding: 5px;">
-                        <input type="text" id="editNombre_${med.id}" value="${med.nombre}" style="width: 100%; box-sizing: border-box;">
+                        <label class="label-mobile" style="display:none; font-weight:bold; font-size:12px;">Nombre y Gramaje:</label>
+                        <input type="text" id="editNombre_${med.id}" value="${med.nombre}">
                     </td>
                     <td class="col-tomas-diarias" style="padding: 5px;">
-                        <select id="editSelectVeces_${med.id}" style="width: 100%;">
+                        <label class="label-mobile" style="display:none; font-weight:bold; font-size:12px;">Tomas Diarias:</label>
+                        <select id="editSelectVeces_${med.id}">
                             ${generarOpcionesVeces(med.veces)}
                         </select>
                     </td>
                     <td class="col-primera-toma" style="padding: 5px;">
-                        <input type="time" id="editPrimeraToma_${med.id}" value="${med.primeraToma || ''}" style="width: 100%; box-sizing: border-box;">
+                        <label class="label-mobile" style="display:none; font-weight:bold; font-size:12px;">1ª Toma:</label>
+                        <input type="time" id="editPrimeraToma_${med.id}" value="${med.primeraToma || ''}">
                     </td>
-                    <td class="col-horarios" style="padding: 5px; color: #777; font-size: 12px;"><i>Recalculando...</i></td>
-                    <td class="td-acciones" style="padding: 5px; text-align: center;">
+                    <td class="col-horarios" style="padding: 5px; color: #777; font-size: 12px; text-align: center;">
+                        <i>Recalculando...</i>
+                    </td>
+                    <td class="td-acciones" style="padding: 5px;">
                         <div class="contenedor-botones-form" style="width: 100%;">
-                            <button onclick="actualizarMedicamento('${med.id}')" class="btn-guardar" style="background-color: #0288d1; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Guardar</button>
-                            <button onclick="renderizarTabla()" class="btn-cancelar" style="background-color: #757575; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Cancelar</button>
+                            <button onclick="actualizarMedicamento('${med.id}')" class="btn-guardar" style="background-color: #0288d1; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold;">Guardar</button>
+                            <button onclick="renderizarTabla()" class="btn-cancelar" style="background-color: #757575; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold;">Cancelar</button>
                         </div>
                     </td>
                 </tr>
@@ -124,7 +131,6 @@ function calcularListaHorarios(horaInicio, veces) {
         const m = String(fecha.getMinutes()).padStart(2, '0');
         lista.push(`${h}:${m}`);
         
-        // Sumar horas equivalentes al día dividido las tomas
         fecha.setMinutes(fecha.getMinutes() + Math.round(intervaloHoras * 60));
     }
     return lista;
@@ -208,13 +214,12 @@ async function borrarMedicamento(id) {
 
 setInterval(() => {
     verificarTomasProgramadas();
-}, 60000); // 60.000 ms = 1 minuto
+}, 60000);
 
 async function verificarTomasProgramadas() {
     const usuarioActual = auth.currentUser;
     if (!usuarioActual) return;
 
-    // Obtener la hora actual en formato "HH:MM" (Ej: "14:30")
     const ahora = new Date();
     const horas = String(ahora.getHours()).padStart(2, '0');
     const minutos = String(ahora.getMinutes()).padStart(2, '0');
@@ -229,7 +234,6 @@ async function verificarTomasProgramadas() {
         snapshot.forEach(doc => {
             const med = doc.data();
 
-            // Comprobar si la hora actual está dentro de los horarios calculados
             if (med.horariosCalculados && med.horariosCalculados.includes(horaActual)) {
                 lanzarNotificacionLocal(med.nombre);
             }
@@ -239,7 +243,6 @@ async function verificarTomasProgramadas() {
     }
 }
 
-// Función que dispara la alerta en el Service Worker de la PWA
 function lanzarNotificacionLocal(nombreMedicamento) {
     if ('serviceWorker' in navigator && Notification.permission === 'granted') {
         navigator.serviceWorker.ready.then(registration => {

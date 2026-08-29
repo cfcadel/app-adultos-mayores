@@ -29,14 +29,14 @@ body {
 /* El menú lateral oculto */
 .menu-lateral {
     height: 100%;
-    width: 0; /* Empieza cerrado */
+    width: 0;
     position: fixed;
     z-index: 10;
     top: 0;
     left: 0;
-    background-color: #1b5e20; /* Verde oscuro */
+    background-color: #1b5e20;
     overflow-x: hidden;
-    transition: 0.3s; /* Efecto de deslizamiento */
+    transition: 0.3s;
     padding-top: 60px;
     box-shadow: 4px 0px 8px rgba(0,0,0,0.3);
 }
@@ -73,13 +73,13 @@ body {
     text-align: center;
 }
 
-input {
-    width: 90%;
-    padding: 12px;
-    font-size: 16px;
+input, select {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
     border: 2px solid #a5d6a7;
     border-radius: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     box-sizing: border-box;
 }
 
@@ -126,7 +126,6 @@ li {
     transition: color 0.2s ease;
 }
 
-/* Efecto al pasar el cursor por encima */
 .enlace:hover {
     color: #4caf50;
     text-decoration: none;
@@ -143,11 +142,10 @@ li {
 .indicador-invalido { color: #c62828; }
 
 /* ===================================================
-   MEJORAS RESPONSIVE Y UX (IMÁGENES 1, 2 Y 3)
+   MEJORAS RESPONSIVE Y UX CORREGIDAS
    =================================================== */
 
-/* Imagen 1: Alinear acciones en horizontal (Editar / Eliminar) */
-table td:last-child,
+/* Alinear acciones en horizontal (Editar / Eliminar) */
 .td-acciones,
 .acciones-cell {
     display: flex !important;
@@ -157,21 +155,18 @@ table td:last-child,
     justify-content: center;
 }
 
-/* Imagen 2 y 3: Reglas exclusivas para pantallas de Celulares */
+/* Reglas exclusivas para pantallas de Celulares */
 @media (max-width: 768px) {
-    /* Ocultar columnas 2 (Tomas diarias) y 3 (1ª Toma) para no desbordar */
-    table th:nth-child(2),
-    table td:nth-child(2),
-    table th:nth-child(3),
-    table td:nth-child(3),
-    .col-tomas-diarias,
-    .col-primera-toma {
+    /* Ocultar columnas 2 y 3 SOLO en las filas de lectura de la tabla */
+    tr:not(.form-crear-medicamento) th:nth-child(2),
+    tr:not(.form-crear-medicamento) td:nth-child(2),
+    tr:not(.form-crear-medicamento) th:nth-child(3),
+    tr:not(.form-crear-medicamento) td:nth-child(3) {
         display: none !important;
     }
 
-    /* Imagen 3: Apilar campos de creación/edición de medicamentos */
-    tr.fila-agregar,
-    .form-crear-medicamento {
+    /* Convertir el formulario de edición/creación en tarjeta vertical */
+    tr.form-crear-medicamento {
         display: flex !important;
         flex-direction: column !important;
         background-color: #fffde7;
@@ -182,23 +177,22 @@ table td:last-child,
         box-sizing: border-box;
     }
 
-    tr.fila-agregar td,
-    .form-crear-medicamento td {
+    /* HACER VISIBLES los campos ocultos dentro del formulario */
+    tr.form-crear-medicamento td {
         display: block !important;
         width: 100% !important;
         padding: 4px 0 !important;
         border: none !important;
     }
 
-    tr.fila-agregar input,
-    tr.fila-agregar select,
-    .form-crear-medicamento input,
-    .form-crear-medicamento select {
-        width: 100% !important;
-        margin-bottom: 8px;
+    /* Mostrar las etiquetas informativas de los inputs en mobile */
+    .label-mobile {
+        display: block !important;
+        margin-bottom: 3px;
+        color: #333;
     }
 
-    /* Botones Guardar y Cancelar uno al lado del otro en mobile */
+    /* Botones Guardar y Cancelar uno al lado del otro */
     .contenedor-botones-form {
         display: flex !important;
         flex-direction: row !important;
