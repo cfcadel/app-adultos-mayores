@@ -29,18 +29,27 @@ function renderizarTabla(idEdicion = null) {
     // 1. FILA DE CREACIÓN
     if (idEdicion === "NUEVO") {
         tbody.innerHTML += `
-            <tr style="background-color: #fff9c4;">
-                <td style="padding: 5px;"><input type="text" id="inputNombre" placeholder="Ej: Tafirol 500mg" style="width: 160px;"></td>
+            <tr class="form-crear-medicamento" style="background-color: #fff9c4;">
                 <td style="padding: 5px;">
-                    <select id="selectVeces">
+                    <label class="label-mobile" style="display:none; font-weight:bold; font-size:12px;">Nombre y Gramaje:</label>
+                    <input type="text" id="inputNombre" placeholder="Ej: Tafirol 500mg" style="width: 100%; box-sizing: border-box;">
+                </td>
+                <td class="col-tomas-diarias" style="padding: 5px;">
+                    <label class="label-mobile" style="display:none; font-weight:bold; font-size:12px;">Tomas Diarias:</label>
+                    <select id="selectVeces" style="width: 100%;">
                         ${generarOpcionesVeces(1)}
                     </select>
                 </td>
-                <td style="padding: 5px;"><input type="time" id="inputPrimeraToma"></td>
-                <td style="padding: 5px; color: #777; font-size: 12px;"><i>Se calculará al guardar</i></td>
-                <td style="padding: 5px; text-align: center;">
-                    <button onclick="guardarNuevoMedicamento()" style="background: none; border: none; cursor: pointer; font-size: 18px;" title="Guardar">✅</button>
-                    <button onclick="renderizarTabla()" style="background: none; border: none; cursor: pointer; font-size: 18px;" title="Cancelar">❌</button>
+                <td class="col-primera-toma" style="padding: 5px;">
+                    <label class="label-mobile" style="display:none; font-weight:bold; font-size:12px;">1ª Toma:</label>
+                    <input type="time" id="inputPrimeraToma" style="width: 100%; box-sizing: border-box;">
+                </td>
+                <td class="col-horarios" style="padding: 5px; color: #777; font-size: 12px;"><i>Se calculará al guardar</i></td>
+                <td class="td-acciones" style="padding: 5px; text-align: center;">
+                    <div class="contenedor-botones-form" style="width: 100%;">
+                        <button onclick="guardarNuevoMedicamento()" class="btn-guardar" style="background-color: #2e7d32; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Guardar</button>
+                        <button onclick="renderizarTabla()" class="btn-cancelar" style="background-color: #757575; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Cancelar</button>
+                    </div>
                 </td>
             </tr>
         `;
@@ -51,18 +60,24 @@ function renderizarTabla(idEdicion = null) {
         if (idEdicion === med.id) {
             // MODO EDICIÓN
             tbody.innerHTML += `
-                <tr style="background-color: #e1f5fe;">
-                    <td style="padding: 5px;"><input type="text" id="editNombre_${med.id}" value="${med.nombre}" style="width: 160px;"></td>
+                <tr class="form-crear-medicamento" style="background-color: #e1f5fe;">
                     <td style="padding: 5px;">
-                        <select id="editSelectVeces_${med.id}">
+                        <input type="text" id="editNombre_${med.id}" value="${med.nombre}" style="width: 100%; box-sizing: border-box;">
+                    </td>
+                    <td class="col-tomas-diarias" style="padding: 5px;">
+                        <select id="editSelectVeces_${med.id}" style="width: 100%;">
                             ${generarOpcionesVeces(med.veces)}
                         </select>
                     </td>
-                    <td style="padding: 5px;"><input type="time" id="editPrimeraToma_${med.id}" value="${med.primeraToma || ''}"></td>
-                    <td style="padding: 5px; color: #777; font-size: 12px;"><i>Recalculando...</i></td>
-                    <td style="padding: 5px; text-align: center;">
-                        <button onclick="actualizarMedicamento('${med.id}')" style="background: none; border: none; cursor: pointer; font-size: 18px;" title="Guardar Cambios">✅</button>
-                        <button onclick="renderizarTabla()" style="background: none; border: none; cursor: pointer; font-size: 18px;" title="Cancelar">❌</button>
+                    <td class="col-primera-toma" style="padding: 5px;">
+                        <input type="time" id="editPrimeraToma_${med.id}" value="${med.primeraToma || ''}" style="width: 100%; box-sizing: border-box;">
+                    </td>
+                    <td class="col-horarios" style="padding: 5px; color: #777; font-size: 12px;"><i>Recalculando...</i></td>
+                    <td class="td-acciones" style="padding: 5px; text-align: center;">
+                        <div class="contenedor-botones-form" style="width: 100%;">
+                            <button onclick="actualizarMedicamento('${med.id}')" class="btn-guardar" style="background-color: #0288d1; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Guardar</button>
+                            <button onclick="renderizarTabla()" class="btn-cancelar" style="background-color: #757575; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Cancelar</button>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -73,10 +88,10 @@ function renderizarTabla(idEdicion = null) {
             tbody.innerHTML += `
                 <tr style="border-bottom: 1px solid #ddd;">
                     <td style="padding: 8px;"><strong>${med.nombre}</strong></td>
-                    <td style="padding: 8px;">${med.veces} ${med.veces == 1 ? 'toma' : 'tomas'} al día</td>
-                    <td style="padding: 8px;">${med.primeraToma || '-'} hs</td>
+                    <td class="col-tomas-diarias" style="padding: 8px;">${med.veces} ${med.veces == 1 ? 'toma' : 'tomas'} al día</td>
+                    <td class="col-primera-toma" style="padding: 8px;">${med.primeraToma || '-'} hs</td>
                     <td style="padding: 8px;"><span style="color: #2e7d32; font-weight: bold;">${horariosTexto}</span></td>
-                    <td style="padding: 8px; text-align: center;">
+                    <td class="td-acciones" style="padding: 8px; text-align: center;">
                         <button onclick="activarEdicion('${med.id}')" style="background: none; border: none; cursor: pointer; font-size: 18px;" title="Editar">✏️</button>
                         <button onclick="borrarMedicamento('${med.id}')" style="background: none; border: none; cursor: pointer; font-size: 18px;" title="Eliminar">🗑️</button>
                     </td>

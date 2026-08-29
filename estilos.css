@@ -141,3 +141,73 @@ li {
 
 .indicador-valido { color: #2e7d32; font-weight: bold; }
 .indicador-invalido { color: #c62828; }
+
+/* ===================================================
+   MEJORAS RESPONSIVE Y UX (IMÁGENES 1, 2 Y 3)
+   =================================================== */
+
+/* Imagen 1: Alinear acciones en horizontal (Editar / Eliminar) */
+table td:last-child,
+.td-acciones,
+.acciones-cell {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Imagen 2 y 3: Reglas exclusivas para pantallas de Celulares */
+@media (max-width: 768px) {
+    /* Ocultar columnas 2 (Tomas diarias) y 3 (1ª Toma) para no desbordar */
+    table th:nth-child(2),
+    table td:nth-child(2),
+    table th:nth-child(3),
+    table td:nth-child(3),
+    .col-tomas-diarias,
+    .col-primera-toma {
+        display: none !important;
+    }
+
+    /* Imagen 3: Apilar campos de creación/edición de medicamentos */
+    tr.fila-agregar,
+    .form-crear-medicamento {
+        display: flex !important;
+        flex-direction: column !important;
+        background-color: #fffde7;
+        padding: 15px;
+        border: 1px solid #ffe082;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        box-sizing: border-box;
+    }
+
+    tr.fila-agregar td,
+    .form-crear-medicamento td {
+        display: block !important;
+        width: 100% !important;
+        padding: 4px 0 !important;
+        border: none !important;
+    }
+
+    tr.fila-agregar input,
+    tr.fila-agregar select,
+    .form-crear-medicamento input,
+    .form-crear-medicamento select {
+        width: 100% !important;
+        margin-bottom: 8px;
+    }
+
+    /* Botones Guardar y Cancelar uno al lado del otro en mobile */
+    .contenedor-botones-form {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 10px !important;
+        margin-top: 10px;
+    }
+
+    .contenedor-botones-form button {
+        flex: 1;
+        margin-bottom: 0;
+    }
+}
