@@ -44,9 +44,7 @@ function renderizarTabla(idEdicion = null) {
                     <label class="label-mobile" style="display:none; font-weight:bold; font-size:12px;">1ª Toma:</label>
                     <input type="time" id="inputPrimeraToma">
                 </td>
-                <td class="col-horarios" style="padding: 5px; color: #777; font-size: 12px; text-align: center;">
-                    <i>Se calculará al guardar</i>
-                </td>
+                <td class="col-horarios" style="padding: 5px; color: #777; font-size: 12px; text-align: center;"></td>
                 <td class="td-acciones" style="padding: 5px;">
                     <div class="contenedor-botones-form" style="width: 100%;">
                         <button onclick="guardarNuevoMedicamento()" class="btn-guardar" style="background-color: #2e7d32; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold;">Guardar</button>
@@ -77,9 +75,7 @@ function renderizarTabla(idEdicion = null) {
                         <label class="label-mobile" style="display:none; font-weight:bold; font-size:12px;">1ª Toma:</label>
                         <input type="time" id="editPrimeraToma_${med.id}" value="${med.primeraToma || ''}">
                     </td>
-                    <td class="col-horarios" style="padding: 5px; color: #777; font-size: 12px; text-align: center;">
-                        <i>Recalculando...</i>
-                    </td>
+                    <td class="col-horarios" style="padding: 5px; color: #777; font-size: 12px; text-align: center;"></td>
                     <td class="td-acciones" style="padding: 5px;">
                         <div class="contenedor-botones-form" style="width: 100%;">
                             <button onclick="actualizarMedicamento('${med.id}')" class="btn-guardar" style="background-color: #0288d1; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold;">Guardar</button>
