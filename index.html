@@ -213,29 +213,41 @@
             cerrarMenu();
         }
 
-        async function solicitarPermisoNotificaciones() {
-            try {
-                const permission = await Notification.requestPermission();
-                if (permission === 'granted') {
-                    const token = await messaging.getToken({ 
-                        vapidKey: 'BKkbUVyXs04RlrxE7kbQyo5Bxlq0_YmkMyNEZZQTKWhssROmm8XcYz-v1UaUVInbGRFOEu5tuuMys9TULauBylk' 
-                    });
-                    
-                    const usuarioActual = auth.currentUser;
-                    if (usuarioActual && token) {
-                        await db.collection("usuarios").doc(usuarioActual.uid).update({
-                            fcmToken: token
-                        });
-                    }
-                    alert("¡Excelente! Las notificaciones quedaron configuradas en este dispositivo.");
-                } else {
-                    alert("Permiso denegado. No podremos enviarte alertas.");
-                }
-            } catch (error) {
-                console.error("Error al activar notificaciones:", error);
-                alert("Las notificaciones requieren que la app esté publicada en HTTPS.");
+    async function solicitarPermisoNotificaciones() {
+    // 1. Verificar si el navegador soporta notificaciones y Service Worker
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+        alert("Este navegador o entorno no soporta notificaciones PWA.");
+        return;
+    }
+
+    // 2. Verificar si se está ejecutando en un entorno seguro (HTTPS)
+    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+        alert("Las notificaciones requieren que ingreses mediante una conexión segura (HTTPS).");
+        return;
+    }
+
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            const token = await messaging.getToken({ 
+                vapidKey: 'BKkbUVyXs04RlrxE7kbQyo5Bxlq0_YmkMyNEZZQTKWhssROmm8XcYz-v1UaUVInbGRFOEu5tuuMys9TULauBylk' 
+            });
+            
+            const usuarioActual = auth.currentUser;
+            if (usuarioActual && token) {
+                await db.collection("usuarios").doc(usuarioActual.uid).set({
+                    fcmToken: token
+                }, { merge: true });
             }
+            alert("¡Excelente! Las notificaciones quedaron configuradas en este dispositivo.");
+        } else {
+            alert("Permiso denegado. Habilita los permisos de notificación en la configuración del teléfono.");
         }
+    } catch (error) {
+        console.error("Error al activar notificaciones:", error);
+        alert("Error al vincular el dispositivo: " + error.message);
+    }
+}
     </script>
 </body>
 </html>
