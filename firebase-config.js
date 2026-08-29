@@ -19,3 +19,6 @@ const auth = firebase.auth();
 
 // Variable global para saber quién está usando la app
 let usuarioActual = null;
+
+// Inicializar Firebase Messaging
+const messaging = firebase.messaging();

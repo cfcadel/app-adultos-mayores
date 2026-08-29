@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi App para Adultos Mayores</title>
+    
+    <!-- Configuración PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4caf50">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3063/3063822.png">
+
     <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
@@ -17,7 +23,7 @@
         <a href="#" style="color: #ffcdd2;" onclick="cerrarSesion()">Cerrar Sesión</a>
     </div>
 
-    <!-- CABECERA SUPERIOR (Oculta por defecto) -->
+    <!-- CABECERA SUPERIOR -->
     <div id="cabeceraApp" class="cabecera" style="display: none;">
         <span class="icono-hamburguesa" onclick="abrirMenu()">☰</span>
         <h2>Mi Asistente</h2>
@@ -40,15 +46,11 @@
     <!-- VISTA 2: REGISTRO DE CUENTA -->
     <div id="vistaRegistro" class="tarjeta" style="display: none;">
         <h2>Crear Cuenta</h2>
-        
         <input type="text" id="regNombreUsuario" placeholder="Nombre de usuario (ej: juan123)">
-        
         <input type="email" id="regEmail" placeholder="Correo electrónico">
         <input type="email" id="regConfirmEmail" placeholder="Confirmar Correo electrónico">
-        
         <input type="password" id="regPassword" placeholder="Contraseña" oninput="validarContrasenaEnVivo()">
         <p class="texto-ayuda" id="regPasswordHelp">Requisito: Mínimo 6 caracteres.</p>
-        
         <input type="password" id="regConfirmPassword" placeholder="Confirmar Contraseña">
         
         <button class="btn-azul" onclick="registrarUsuario()">Registrarme</button>
@@ -66,13 +68,39 @@
 
     <!-- PANTALLA PRINCIPAL DE LA APP -->
     <div id="pantallaApp" style="display: none;">
-        <div id="seccionMedicamentos" class="tarjeta">
-            <h2>Mis Medicamentos</h2>
-            <input type="text" id="campoMedicina" placeholder="Nombre de medicamento...">
-            <button>+ Agregar Medicamento</button>
-            <ul id="listaMedicinas"></ul>
+        
+        <!-- BIENVENIDA INICIAL -->
+        <div id="seccionInicio" class="tarjeta" style="text-align: center; margin: 30px auto;">
+            <h2>¡Hola! 👋</h2>
+            <p>Selecciona una opción del menú lateral (☰) arriba a la izquierda para comenzar.</p>
+            <hr style="border-color: #e0e0e0; margin: 15px 0;">
+            <button class="btn-azul" onclick="solicitarPermisoNotificaciones()">🔔 Activar Notificaciones de Alarma</button>
         </div>
 
+        <!-- SECCIÓN MEDICAMENTOS -->
+        <div id="seccionMedicamentos" class="tarjeta" style="display: none; max-width: 95%; margin: 20px auto;">
+            <h2>Mis Medicamentos</h2>
+            <button class="btn-azul" style="margin-bottom: 15px;" onclick="mostrarFilaNueva()">+ Agregar Medicamento</button>
+            
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                    <thead>
+                        <tr style="background-color: #e8f5e9; border-bottom: 2px solid #4caf50;">
+                            <th style="padding: 8px;">NOMBRE Y GRAMAJE</th>
+                            <th style="padding: 8px;">TOMAS DIARIAS</th>
+                            <th style="padding: 8px;">1ª TOMA</th>
+                            <th style="padding: 8px;">HORARIOS CALCULADOS</th>
+                            <th style="padding: 8px; text-align: center;">ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaMedicamentosBody">
+                        <!-- Filas de medicamentos -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECCIÓN FINANZAS -->
         <div id="seccionFinanzas" class="tarjeta" style="display: none;">
             <h2>Calculador Mensual</h2>
             <label><strong>Jubilación / Ingresos:</strong></label>
@@ -90,24 +118,63 @@
         </div>
     </div>
 
-    <!-- Carga de SDKs de Firebase -->
+    <!-- SDKs Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
 
-    <!-- Archivos del proyecto -->
+    <!-- JS del Proyecto -->
     <script src="firebase-config.js"></script>
     <script src="autenticacion.js"></script>
+    <script src="medicamentos.js"></script>
 
     <script>
+        // Registrar Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registrado:', reg))
+                    .catch(err => console.error('Error al registrar Service Worker:', err));
+            });
+        }
+
         function abrirMenu() { document.getElementById("miMenuLateral").style.width = "250px"; }
         function cerrarMenu() { document.getElementById("miMenuLateral").style.width = "0"; }
+        
         function cambiarSeccion(idSeccion) {
+            document.getElementById("seccionInicio").style.display = "none";
             document.getElementById("seccionMedicamentos").style.display = "none";
             document.getElementById("seccionFinanzas").style.display = "none";
             document.getElementById(idSeccion).style.display = "block";
             cerrarMenu();
         }
+
+       async function solicitarPermisoNotificaciones() {
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            // Obtener el token único del dispositivo
+            const token = await messaging.getToken({ 
+                vapidKey: 'TU_VAPID_KEY_DE_FIREBASE' // (Lo obtendremos de la consola de Firebase)
+            });
+            
+            const usuarioActual = auth.currentUser;
+            if (usuarioActual && token) {
+                // Guardar el token en el perfil del usuario para enviarle alertas
+                await db.collection("usuarios").doc(usuarioActual.uid).update({
+                    fcmToken: token
+                });
+            }
+            alert("¡Excelente! Las notificaciones quedaron configuradas en este dispositivo.");
+        } else {
+            alert("Permiso denegado. No podremos enviarte alertas.");
+        }
+    } catch (error) {
+        console.error("Error al activar notificaciones:", error);
+        alert("Para activar las notificaciones, primero debemos subir la app a GitHub (requiere HTTPS).");
+    }
+}
     </script>
 </body>
 </html>
