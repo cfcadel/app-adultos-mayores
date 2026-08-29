@@ -10,6 +10,9 @@
     <meta name="theme-color" content="#4caf50">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3063/3063822.png">
 
+    <!-- CSS del Selector de Países (intl-tel-input) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
+
     <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
@@ -19,7 +22,8 @@
         <a href="javascript:void(0)" class="boton-cerrar" onclick="cerrarMenu()">×</a>
         <a href="#" onclick="cambiarSeccion('seccionMedicamentos')">💊 Medicinas</a>
         <a href="#" onclick="cambiarSeccion('seccionFinanzas')">💰 Presupuesto</a>
-        <hr style="border-color: #4caf50; margin: 20px;">
+        <hr style="border-color: #4caf50; margin: 20px 0 10px 0;">
+        <a href="#" onclick="cambiarSeccion('seccionMiUsuario')">👤 Mi Usuario</a>
         <a href="#" style="color: #ffcdd2;" onclick="cerrarSesion()">Cerrar Sesión</a>
     </div>
 
@@ -49,6 +53,12 @@
         <input type="text" id="regNombreUsuario" placeholder="Nombre de usuario (ej: juan123)">
         <input type="email" id="regEmail" placeholder="Correo electrónico">
         <input type="email" id="regConfirmEmail" placeholder="Confirmar Correo electrónico">
+        
+        <!-- Campo Teléfono con Bandera -->
+        <div style="margin-bottom: 15px; width: 100%;">
+            <input type="tel" id="regTelefono" style="width: 100%;">
+        </div>
+
         <input type="password" id="regPassword" placeholder="Contraseña" oninput="validarContrasenaEnVivo()">
         <p class="texto-ayuda" id="regPasswordHelp">Requisito: Mínimo 6 caracteres.</p>
         <input type="password" id="regConfirmPassword" placeholder="Confirmar Contraseña">
@@ -116,7 +126,27 @@
                 <h3 id="dineroLibre">$0</h3>
             </div>
         </div>
+
+        <!-- SECCIÓN MI USUARIO (PERFIL) -->
+        <div id="seccionMiUsuario" class="tarjeta" style="display: none;">
+            <h2>Mi Perfil</h2>
+            <label><strong>Usuario:</strong></label>
+            <input type="text" id="perfilNombreUsuario" disabled style="background-color: #f0f0f0;">
+            
+            <label><strong>Correo Electrónico:</strong></label>
+            <input type="email" id="perfilEmail" disabled style="background-color: #f0f0f0;">
+            
+            <label><strong>Teléfono de Contacto:</strong></label>
+            <div style="margin-bottom: 15px; width: 100%;">
+                <input type="tel" id="perfilTelefono" style="width: 100%;">
+            </div>
+
+            <button class="btn-azul" onclick="guardarDatosPerfil()">Guardar Cambios</button>
+        </div>
     </div>
+
+    <!-- JS del Selector de Países (intl-tel-input) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
 
     <!-- SDKs Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -130,6 +160,32 @@
     <script src="medicamentos.js"></script>
 
     <script>
+        // Inicializar selectores de teléfono con banderas
+        let itiRegistro, itiPerfil;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const inputReg = document.querySelector("#regTelefono");
+            const inputPerfil = document.querySelector("#perfilTelefono");
+
+            if (inputReg) {
+                itiRegistro = window.intlTelInput(inputReg, {
+                    initialCountry: "ar", // Argentina por defecto
+                    preferredCountries: ["ar", "cl", "uy", "co", "mx", "es"],
+                    separateDialCode: true,
+                    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+                });
+            }
+
+            if (inputPerfil) {
+                itiPerfil = window.intlTelInput(inputPerfil, {
+                    initialCountry: "ar",
+                    preferredCountries: ["ar", "cl", "uy", "co", "mx", "es"],
+                    separateDialCode: true,
+                    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+                });
+            }
+        });
+
         // Registrar Service Worker para PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -146,35 +202,40 @@
             document.getElementById("seccionInicio").style.display = "none";
             document.getElementById("seccionMedicamentos").style.display = "none";
             document.getElementById("seccionFinanzas").style.display = "none";
+            document.getElementById("seccionMiUsuario").style.display = "none";
+            
             document.getElementById(idSeccion).style.display = "block";
+            
+            if (idSeccion === 'seccionMiUsuario') {
+                cargarDatosPerfil();
+            }
+            
             cerrarMenu();
         }
 
-       async function solicitarPermisoNotificaciones() {
-    try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            // Obtener el token único del dispositivo
-            const token = await messaging.getToken({ 
-                vapidKey: 'BKkbUVyXs04RlrxE7kbQyo5Bxlq0_YmkMyNEZZQTKWhssROmm8XcYz-v1UaUVInbGRFOEu5tuuMys9TULauBylk' // (Lo obtendremos de la consola de Firebase)
-            });
-            
-            const usuarioActual = auth.currentUser;
-            if (usuarioActual && token) {
-                // Guardar el token en el perfil del usuario para enviarle alertas
-                await db.collection("usuarios").doc(usuarioActual.uid).update({
-                    fcmToken: token
-                });
+        async function solicitarPermisoNotificaciones() {
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    const token = await messaging.getToken({ 
+                        vapidKey: 'BKkbUVyXs04RlrxE7kbQyo5Bxlq0_YmkMyNEZZQTKWhssROmm8XcYz-v1UaUVInbGRFOEu5tuuMys9TULauBylk' 
+                    });
+                    
+                    const usuarioActual = auth.currentUser;
+                    if (usuarioActual && token) {
+                        await db.collection("usuarios").doc(usuarioActual.uid).update({
+                            fcmToken: token
+                        });
+                    }
+                    alert("¡Excelente! Las notificaciones quedaron configuradas en este dispositivo.");
+                } else {
+                    alert("Permiso denegado. No podremos enviarte alertas.");
+                }
+            } catch (error) {
+                console.error("Error al activar notificaciones:", error);
+                alert("Las notificaciones requieren que la app esté publicada en HTTPS.");
             }
-            alert("¡Excelente! Las notificaciones quedaron configuradas en este dispositivo.");
-        } else {
-            alert("Permiso denegado. No podremos enviarte alertas.");
         }
-    } catch (error) {
-        console.error("Error al activar notificaciones:", error);
-        alert("Para activar las notificaciones, primero debemos subir la app a GitHub (requiere HTTPS).");
-    }
-}
     </script>
 </body>
 </html>
