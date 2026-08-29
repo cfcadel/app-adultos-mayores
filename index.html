@@ -227,10 +227,13 @@
     }
 
     try {
+        const serviceWorkerRegistration = await navigator.serviceWorker.register('/sw.js');
+
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
             const token = await messaging.getToken({ 
-                vapidKey: 'BKkbUVyXs04RlrxE7kbQyo5Bxlq0_YmkMyNEZZQTKWhssROmm8XcYz-v1UaUVInbGRFOEu5tuuMys9TULauBylk' 
+                vapidKey: 'BKkbUVyXs04RlrxE7kbQyo5Bxlq0_YmkMyNEZZQTKWhssROmm8XcYz-v1UaUVInbGRFOEu5tuuMys9TULauBylk',
+                serviceWorkerRegistration: serviceWorkerRegistration // <-- Agregar esta línea 
             });
             
             const usuarioActual = auth.currentUser;
