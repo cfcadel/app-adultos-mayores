@@ -186,3 +186,56 @@ async function borrarMedicamento(id) {
         }
     }
 }
+
+// ==========================================
+// RELOJ INTERNO DE COMPROBACIÓN (CADA 1 MINUTO)
+// ==========================================
+
+setInterval(() => {
+    verificarTomasProgramadas();
+}, 60000); // 60.000 ms = 1 minuto
+
+async function verificarTomasProgramadas() {
+    const usuarioActual = auth.currentUser;
+    if (!usuarioActual) return;
+
+    // Obtener la hora actual en formato "HH:MM" (Ej: "14:30")
+    const ahora = new Date();
+    const horas = String(ahora.getHours()).padStart(2, '0');
+    const minutos = String(ahora.getMinutes()).padStart(2, '0');
+    const horaActual = `${horas}:${minutos}`;
+
+    try {
+        const snapshot = await db.collection("usuarios")
+            .doc(usuarioActual.uid)
+            .collection("medicamentos")
+            .get();
+
+        snapshot.forEach(doc => {
+            const med = doc.data();
+
+            // Comprobar si la hora actual está dentro de los horarios calculados
+            if (med.horariosCalculados && med.horariosCalculados.includes(horaActual)) {
+                lanzarNotificacionLocal(med.nombre);
+            }
+        });
+    } catch (error) {
+        console.error("Error al verificar alarmas:", error);
+    }
+}
+
+// Función que dispara la alerta en el Service Worker de la PWA
+function lanzarNotificacionLocal(nombreMedicamento) {
+    if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+        navigator.serviceWorker.ready.then(registration => {
+            registration.showNotification("💊 Recordatorio de Medicina", {
+                body: `Es hora de tomar tu medicamento: ${nombreMedicamento}`,
+                icon: "https://cdn-icons-png.flaticon.com/512/3063/3063822.png",
+                badge: "https://cdn-icons-png.flaticon.com/512/3063/3063822.png",
+                vibrate: [200, 100, 200, 100, 200],
+                tag: `alerta-${nombreMedicamento}`,
+                renotify: true
+            });
+        });
+    }
+}
