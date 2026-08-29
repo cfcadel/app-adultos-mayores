@@ -157,20 +157,26 @@ li {
 
 /* Reglas exclusivas para pantallas de Celulares */
 @media (max-width: 768px) {
-    /* Ocultar columnas 2 y 3 SOLO en las filas de lectura de la tabla */
-    tr:not(.form-crear-medicamento) th:nth-child(2),
-    tr:not(.form-crear-medicamento) td:nth-child(2),
-    tr:not(.form-crear-medicamento) th:nth-child(3),
-    tr:not(.form-crear-medicamento) td:nth-child(3) {
+    /* Ocultar encabezados y columnas secundarias en mobile */
+    table th:nth-child(2),
+    table td:nth-child(2),
+    table th:nth-child(3),
+    table td:nth-child(3) {
         display: none !important;
     }
 
-    /* Ocultar celda de horarios durante la creación/edición */
-    tr.form-crear-medicamento .col-horarios {
-        display: none !important;
+    /* Forzar que las filas se estiren al 100% del contenedor */
+    table {
+        width: 100% !important;
+        display: block !important;
     }
 
-    /* Convertir el formulario de edición/creación en tarjeta vertical que ocupa todo el ancho */
+    tbody {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    /* Convertir el formulario en tarjeta vertical de ancho completo */
     tr.form-crear-medicamento {
         display: block !important;
         width: 100% !important;
@@ -182,7 +188,7 @@ li {
         box-sizing: border-box;
     }
 
-    /* HACER VISIBLES los campos ocultos dentro del formulario */
+    /* Hacer visibles las celdas del formulario apiladas */
     tr.form-crear-medicamento td {
         display: block !important;
         width: 100% !important;
@@ -190,14 +196,14 @@ li {
         border: none !important;
     }
 
-    /* Mostrar las etiquetas informativas de los inputs en mobile */
+    /* Mostrar las etiquetas de los campos en mobile */
     .label-mobile {
         display: block !important;
         margin-bottom: 3px;
         color: #333;
     }
 
-    /* Botones Guardar y Cancelar uno al lado del otro */
+    /* Botones Guardar y Cancelar integrados en paralelo */
     .contenedor-botones-form {
         display: flex !important;
         flex-direction: row !important;

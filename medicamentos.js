@@ -36,15 +36,17 @@ function renderizarTabla(idEdicion = null) {
                 </td>
                 <td class="col-tomas-diarias" style="padding: 5px;">
                     <label class="label-mobile" style="display:none; font-weight:bold; font-size:12px;">Tomas Diarias:</label>
-                    <select id="selectVeces">
+                    <select id="selectVeces" onchange="actualizarPrevisualizacionHorarios()">
                         ${generarOpcionesVeces(1)}
                     </select>
                 </td>
                 <td class="col-primera-toma" style="padding: 5px;">
                     <label class="label-mobile" style="display:none; font-weight:bold; font-size:12px;">1ª Toma:</label>
-                    <input type="time" id="inputPrimeraToma">
+                    <input type="time" id="inputPrimeraToma" onchange="actualizarPrevisualizacionHorarios()">
                 </td>
-                <td class="col-horarios" style="padding: 5px; color: #777; font-size: 12px; text-align: center;"></td>
+                <td class="col-horarios" style="padding: 5px; color: #2e7d32; font-size: 13px; font-weight: bold; text-align: center;">
+                    <div id="vistaPreviaHorarios" style="margin: 8px 0;">Indica la 1ª toma para calcular</div>
+                </td>
                 <td class="td-acciones" style="padding: 5px;">
                     <div class="contenedor-botones-form" style="width: 100%;">
                         <button onclick="guardarNuevoMedicamento()" class="btn-guardar" style="background-color: #2e7d32; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold;">Guardar</button>
@@ -67,15 +69,17 @@ function renderizarTabla(idEdicion = null) {
                     </td>
                     <td class="col-tomas-diarias" style="padding: 5px;">
                         <label class="label-mobile" style="display:none; font-weight:bold; font-size:12px;">Tomas Diarias:</label>
-                        <select id="editSelectVeces_${med.id}">
+                        <select id="editSelectVeces_${med.id}" onchange="actualizarPrevisualizacionHorarios('${med.id}')">
                             ${generarOpcionesVeces(med.veces)}
                         </select>
                     </td>
                     <td class="col-primera-toma" style="padding: 5px;">
                         <label class="label-mobile" style="display:none; font-weight:bold; font-size:12px;">1ª Toma:</label>
-                        <input type="time" id="editPrimeraToma_${med.id}" value="${med.primeraToma || ''}">
+                        <input type="time" id="editPrimeraToma_${med.id}" value="${med.primeraToma || ''}" onchange="actualizarPrevisualizacionHorarios('${med.id}')">
                     </td>
-                    <td class="col-horarios" style="padding: 5px; color: #777; font-size: 12px; text-align: center;"></td>
+                    <td class="col-horarios" style="padding: 5px; color: #0288d1; font-size: 13px; font-weight: bold; text-align: center;">
+                        <div id="vistaPreviaHorarios_${med.id}" style="margin: 8px 0;">Horarios: ${Array.isArray(med.horariosCalculados) ? med.horariosCalculados.join(" hs, ") + " hs" : ''}</div>
+                    </td>
                     <td class="td-acciones" style="padding: 5px;">
                         <div class="contenedor-botones-form" style="width: 100%;">
                             <button onclick="actualizarMedicamento('${med.id}')" class="btn-guardar" style="background-color: #0288d1; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold;">Guardar</button>
@@ -102,6 +106,25 @@ function renderizarTabla(idEdicion = null) {
             `;
         }
     });
+}
+
+// CÁLCULO DINÁMICO EN TIEMPO REAL AL CAMBIAR LOS INPUTS
+function actualizarPrevisualizacionHorarios(id = null) {
+    const selectorVeces = id ? document.getElementById(`editSelectVeces_${id}`) : document.getElementById("selectVeces");
+    const inputHora = id ? document.getElementById(`editPrimeraToma_${id}`) : document.getElementById("inputPrimeraToma");
+    const contenedorVista = id ? document.getElementById(`vistaPreviaHorarios_${id}`) : document.getElementById("vistaPreviaHorarios");
+
+    if (!selectorVeces || !inputHora || !contenedorVista) return;
+
+    const veces = parseInt(selectorVeces.value);
+    const primeraToma = inputHora.value;
+
+    if (primeraToma) {
+        const horarios = calcularListaHorarios(primeraToma, veces);
+        contenedorVista.innerHTML = `Horarios: ${horarios.join(" hs, ")} hs`;
+    } else {
+        contenedorVista.innerHTML = "Indica la 1ª toma para calcular";
+    }
 }
 
 function generarOpcionesVeces(seleccionado) {
