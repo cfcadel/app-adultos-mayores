@@ -28,76 +28,87 @@ function escucharTurnos(uid) {
     });
 }
 
-// Renderizar la tabla de turnos
+// Renderizar la lista de turnos (Formato vertical responsive)
 function renderizarTablaTurnos(idEdicion = null) {
-    const tbody = document.getElementById("tablaTurnosBody");
-    if (!tbody) return;
-    tbody.innerHTML = "";
+    const contenedor = document.getElementById("tablaTurnosBody");
+    if (!contenedor) return;
+    contenedor.innerHTML = "";
 
-    // Fila para agregar nuevo turno
+    // Formulario para agregar un nuevo turno
     if (idEdicion === "NUEVO") {
-        tbody.innerHTML += `
-            <tr style="background-color: #fff9c4;">
-                <td style="padding: 5px;">
-                    <input type="text" id="inputEspecialidadTurno" placeholder="Ej: Cardiología / Dr. Gómez" style="width: 100%;">
-                </td>
-                <td style="padding: 5px;">
-                    <input type="date" id="inputFechaTurno" style="width: 100%;">
-                </td>
-                <td style="padding: 5px;">
-                    <input type="time" id="inputHoraTurno" style="width: 100%;">
-                </td>
-                <td style="padding: 5px; display: flex; gap: 5px; justify-content: center;">
-                    <button onclick="guardarNuevoTurno()" style="background-color: #2e7d32; color: white; padding: 8px; border: none; border-radius: 4px; cursor: pointer;">Guardar</button>
-                    <button onclick="renderizarTablaTurnos()" style="background-color: #757575; color: white; padding: 8px; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
-                </td>
-            </tr>
+        contenedor.innerHTML += `
+            <div style="background-color: #fffde7; border: 1px solid #fff59d; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left;">
+                <div style="margin-bottom: 10px;">
+                    <label style="font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Especialidad / Médico:</label>
+                    <input type="text" id="inputEspecialidadTurno" placeholder="Ej: Cardiología / Dr. Gómez" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                </div>
+                
+                <div style="margin-bottom: 10px;">
+                    <label style="font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Fecha del Turno:</label>
+                    <input type="date" id="inputFechaTurno" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Hora del Turno:</label>
+                    <input type="time" id="inputHoraTurno" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="guardarNuevoTurno()" style="flex: 1; background-color: #2e7d32; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Guardar</button>
+                    <button onclick="renderizarTablaTurnos()" style="flex: 1; background-color: #757575; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer;">Cancelar</button>
+                </div>
+            </div>
         `;
     }
 
     if (turnosGuardados.length === 0 && idEdicion !== "NUEVO") {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="4" style="text-align: center; padding: 15px; color: #757575;">
-                    No tienes turnos pendientes programados.
-                </td>
-            </tr>
+        contenedor.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #757575;">
+                No tienes turnos pendientes programados.
+            </div>
         `;
         return;
     }
 
     turnosGuardados.forEach((turno) => {
         if (idEdicion === turno.id) {
-            // Fila en modo edición
-            tbody.innerHTML += `
-                <tr style="background-color: #e8f5e9;">
-                    <td style="padding: 5px;">
-                        <input type="text" id="editEspecialidadTurno_${turno.id}" value="${turno.especialidad}" style="width: 100%;">
-                    </td>
-                    <td style="padding: 5px;">
-                        <input type="date" id="editFechaTurno_${turno.id}" value="${turno.fecha}" style="width: 100%;">
-                    </td>
-                    <td style="padding: 5px;">
-                        <input type="time" id="editHoraTurno_${turno.id}" value="${turno.hora}" style="width: 100%;">
-                    </td>
-                    <td style="padding: 5px; display: flex; gap: 5px; justify-content: center;">
-                        <button onclick="actualizarTurno('${turno.id}')" style="background-color: #2e7d32; color: white; padding: 8px; border: none; border-radius: 4px; cursor: pointer;">Guardar</button>
-                        <button onclick="renderizarTablaTurnos()" style="background-color: #757575; color: white; padding: 8px; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
-                    </td>
-                </tr>
+            // Formulario en modo edición
+            contenedor.innerHTML += `
+                <div style="background-color: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left;">
+                    <div style="margin-bottom: 10px;">
+                        <label style="font-weight: bold; color: #2e7d32; display: block; margin-bottom: 4px;">Especialidad / Médico:</label>
+                        <input type="text" id="editEspecialidadTurno_${turno.id}" value="${turno.especialidad}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                    </div>
+                    
+                    <div style="margin-bottom: 10px;">
+                        <label style="font-weight: bold; color: #2e7d32; display: block; margin-bottom: 4px;">Fecha del Turno:</label>
+                        <input type="date" id="editFechaTurno_${turno.id}" value="${turno.fecha}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-weight: bold; color: #2e7d32; display: block; margin-bottom: 4px;">Hora del Turno:</label>
+                        <input type="time" id="editHoraTurno_${turno.id}" value="${turno.hora}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="actualizarTurno('${turno.id}')" style="flex: 1; background-color: #2e7d32; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Guardar</button>
+                        <button onclick="renderizarTablaTurnos()" style="flex: 1; background-color: #757575; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
             `;
         } else {
-            // Fila normal
-            tbody.innerHTML += `
-                <tr style="border-bottom: 1px solid #ddd;">
-                    <td style="padding: 10px;"><strong>${turno.especialidad}</strong></td>
-                    <td style="padding: 10px;">${formatearFechaLectura(turno.fecha)}</td>
-                    <td style="padding: 10px;">${turno.hora} hs</td>
-                    <td style="padding: 10px; text-align: center;">
-                        <button onclick="renderizarTablaTurnos('${turno.id}')" style="background:none; border:none; cursor:pointer;" title="Editar">✏️</button>
-                        <button onclick="borrarTurno('${turno.id}')" style="background:none; border:none; cursor:pointer;" title="Eliminar">🗑️</button>
-                    </td>
-                </tr>
+            // Tarjeta de turno guardado
+            contenedor.innerHTML += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid #eee; text-align: left;">
+                    <div>
+                        <strong style="font-size: 16px; color: #222;">${turno.especialidad}</strong><br>
+                        <span style="font-size: 14px; color: #555;">📅 ${formatearFechaLectura(turno.fecha)} &nbsp;|&nbsp; ⏰ ${turno.hora} hs</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button onclick="renderizarTablaTurnos('${turno.id}')" style="background:none; border:none; cursor:pointer; font-size: 18px;" title="Editar">✏️</button>
+                        <button onclick="borrarTurno('${turno.id}')" style="background:none; border:none; cursor:pointer; font-size: 18px;" title="Eliminar">🗑️</button>
+                    </div>
+                </div>
             `;
         }
     });
@@ -129,8 +140,8 @@ async function guardarNuevoTurno() {
             especialidad: especialidad,
             fecha: fecha,
             hora: hora,
-            fechaHora: firebase.firestore.Timestamp.fromDate(fechaHoraTurno), // Nuevo campo
-            recordatorio24hEnviado: false, // Bandera de control
+            fechaHora: firebase.firestore.Timestamp.fromDate(fechaHoraTurno),
+            recordatorio24hEnviado: false,
             fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
         });
     } catch (error) {
@@ -159,8 +170,8 @@ async function actualizarTurno(id) {
             especialidad: especialidad,
             fecha: fecha,
             hora: hora,
-            fechaHora: firebase.firestore.Timestamp.fromDate(fechaHoraTurno), // Actualizamos el timestamp
-            recordatorio24hEnviado: false // Reiniciamos por si se cambió de día
+            fechaHora: firebase.firestore.Timestamp.fromDate(fechaHoraTurno),
+            recordatorio24hEnviado: false
         });
     } catch (error) {
         alert("Error al actualizar: " + error.message);
