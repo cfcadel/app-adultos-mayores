@@ -258,4 +258,19 @@ li {
         border: none !important;
     }
 }
+/* Arreglo para que intl-tel-input ocupe el 100% del contenedor */
+    .iti {
+        width: 100% !important;
+    }
+    .link-contacto {
+        color: #1565c0;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 15px;
+    }
+    .link-contacto:hover {
+        text-decoration: underline;
+    }
+
+
 }

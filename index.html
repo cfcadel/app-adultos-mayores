@@ -112,36 +112,52 @@
             </div>
         </div>
         
-<!-- SECCIÓN 1: CONTACTOS -->
+<<!-- SECCIÓN 1: CONTACTOS -->
 <div id="seccionContactos" class="tarjeta" style="display: none; max-width: 95%; margin: 20px auto;">
     <h2>📞 Contactos</h2>
     
     <!-- Contacto: Médico de Cabecera -->
     <div style="background-color: #f1f8e9; border: 1px solid #c8e6c9; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
-        <h3 style="margin-top: 0; color: #2e7d32;">🩺 Médico de Cabecera</h3>
-        
-        <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px;">Nombre del Médico:</label>
-        <input type="text" id="contactoMedicoNombre" placeholder="Ej: Dr. Carlos Pérez" style="width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box;">
-        
-        <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px;">Teléfono de Contacto:</label>
-        <div style="margin-bottom: 10px;">
-            <input type="tel" id="contactoMedicoTel" style="width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3 style="margin: 0; color: #2e7d32;">🩺 Médico de Cabecera</h3>
+            <button id="btnEditarMedico" onclick="activarEdicionMedico()" style="display: none; background: none; border: none; cursor: pointer; font-size: 15px; color: #2e7d32; font-weight: bold;">✏️ Editar</button>
         </div>
 
-        <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px;">Correo Electrónico (Mail):</label>
-        <input type="email" id="contactoMedicoEmail" placeholder="Ej: medico@ejemplo.com" style="width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box;">
-        
-        <button class="btn-azul" onclick="guardarContactoMedico()" style="margin-top: 5px;">Guardar Médico</button>
+        <!-- VISTA DE LECTURA (BLOQUEADO) -->
+        <div id="vistaMedico" style="display: none; background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #c8e6c9;">
+            <p style="margin: 6px 0; font-size: 16px;"><strong>Nombre:</strong> <span id="txtMedicoNombre" style="color: #333;">-</span></p>
+            <p style="margin: 8px 0; font-size: 16px;"><strong>📞 Teléfono:</strong> <a id="linkMedicoTel" href="#" class="link-contacto">-</a></p>
+            <p style="margin: 6px 0; font-size: 16px;"><strong>✉️ Mail:</strong> <a id="linkMedicoEmail" href="#" class="link-contacto" style="font-weight: normal;">-</a></p>
+        </div>
+
+        <!-- FORMULARIO DE EDICIÓN -->
+        <div id="formMedico">
+            <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px;">Nombre del Médico:</label>
+            <input type="text" id="contactoMedicoNombre" placeholder="Ej: Dr. Carlos Pérez" style="width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box;">
+            
+            <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px;">Teléfono de Contacto:</label>
+            <div style="margin-bottom: 10px; width: 100%;">
+                <input type="tel" id="contactoMedicoTel" style="width: 100%;">
+            </div>
+
+            <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px;">Correo Electrónico (Mail):</label>
+            <input type="email" id="contactoMedicoEmail" placeholder="Ej: medico@ejemplo.com" style="width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box;">
+            
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn-azul" onclick="guardarContactoMedico()" style="flex: 1;">Guardar Médico</button>
+                <button id="btnCancelarMedico" onclick="cancelarEdicionMedico()" style="display: none; background-color: #757575; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Cancelar</button>
+            </div>
+        </div>
     </div>
 
-    <!-- Sección: Familiares a Cargo (Soporta Múltiples) -->
+    <!-- Sección: Familiares a Cargo (Múltiples) -->
     <div style="background-color: #e3f2fd; border: 1px solid #bbdefb; border-radius: 10px; padding: 15px;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
             <h3 style="margin: 0; color: #1565c0;">👨‍👩‍👧 Familiares a Cargo</h3>
             <button class="btn-azul" onclick="mostrarFormNuevoFamiliar()" style="background-color: #1976d2;">+ Agregar Familiar</button>
         </div>
 
-        <!-- Formulario para agregar un nuevo familiar -->
+        <!-- Formulario Agregar Nuevo Familiar -->
         <div id="formNuevoFamiliar" style="display: none; background: #ffffff; border: 1px solid #90caf9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
             <h4 style="margin-top: 0; color: #1565c0;">Agregar Nuevo Familiar</h4>
             
@@ -149,7 +165,7 @@
             <input type="text" id="nuevoFamiliarNombre" placeholder="Ej: María (Hija)" style="width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box;">
 
             <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px;">Teléfono de Contacto:</label>
-            <div style="margin-bottom: 10px;">
+            <div style="margin-bottom: 10px; width: 100%;">
                 <input type="tel" id="nuevoFamiliarTel" style="width: 100%;">
             </div>
 

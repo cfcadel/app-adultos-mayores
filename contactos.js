@@ -1,11 +1,13 @@
 // ==========================================
-// MÓDULO DE CONTACTOS (MÉDICO Y MÚLTIPLES FAMILIARES)
+// MÓDULO DE CONTACTOS (MÉDICO Y FAMILIARES)
 // ==========================================
 
 let itiMedico = null;
 let itiNuevoFamiliar = null;
 let itiEdicionMap = {};
 let unsubFamiliares = null;
+
+let datosMedicoGuardados = null;
 
 auth.onAuthStateChanged((user) => {
     if (user) {
@@ -15,7 +17,6 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
-// Función helper para inicializar el widget intlTelInput
 function crearIti(inputElement) {
     if (!inputElement) return null;
     return window.intlTelInput(inputElement, {
@@ -46,16 +47,65 @@ async function cargarContactoMedico(uid) {
         const docRef = db.collection("usuarios").doc(uid).collection("contactos").doc("medico");
         const doc = await docRef.get();
 
-        if (doc.exists) {
-            const data = doc.data();
-            if (data.nombre) document.getElementById("contactoMedicoNombre").value = data.nombre;
-            if (data.email) document.getElementById("contactoMedicoEmail").value = data.email;
-            if (data.tel && itiMedico) {
-                itiMedico.setNumber(data.tel);
-            }
+        if (doc.exists && doc.data().nombre) {
+            datosMedicoGuardados = doc.data();
+            mostrarVistaBloqueadaMedico(datosMedicoGuardados);
+        } else {
+            mostrarFormularioMedico();
         }
     } catch (error) {
-        console.error("Error al cargar contacto del médico:", error);
+        console.error("Error al cargar médico:", error);
+    }
+}
+
+function mostrarVistaBloqueadaMedico(data) {
+    document.getElementById("txtMedicoNombre").innerText = data.nombre || "Sin especificar";
+    
+    const linkTel = document.getElementById("linkMedicoTel");
+    if (data.tel) {
+        linkTel.href = `tel:${data.tel}`;
+        linkTel.innerText = data.tel;
+    } else {
+        linkTel.href = "#";
+        linkTel.innerText = "No registrado";
+    }
+
+    const linkEmail = document.getElementById("linkMedicoEmail");
+    if (data.email) {
+        linkEmail.href = `mailto:${data.email}`;
+        linkEmail.innerText = data.email;
+    } else {
+        linkEmail.href = "#";
+        linkEmail.innerText = "No registrado";
+    }
+
+    document.getElementById("vistaMedico").style.display = "block";
+    document.getElementById("btnEditarMedico").style.display = "inline-block";
+    document.getElementById("formMedico").style.display = "none";
+}
+
+function mostrarFormularioMedico() {
+    document.getElementById("vistaMedico").style.display = "none";
+    document.getElementById("btnEditarMedico").style.display = "none";
+    document.getElementById("formMedico").style.display = "block";
+
+    if (datosMedicoGuardados) {
+        document.getElementById("btnCancelarMedico").style.display = "inline-block";
+        document.getElementById("contactoMedicoNombre").value = datosMedicoGuardados.nombre || "";
+        document.getElementById("contactoMedicoEmail").value = datosMedicoGuardados.email || "";
+        if (itiMedico && datosMedicoGuardados.tel) itiMedico.setNumber(datosMedicoGuardados.tel);
+    } else {
+        document.getElementById("btnCancelarMedico").style.display = "none";
+    }
+}
+
+function activarEdicionMedico() {
+    mostrarFormularioMedico();
+}
+
+function cancelarEdicionMedico() {
+    if (datosMedicoGuardados) {
+        mostrarVistaBloqueadaMedico(datosMedicoGuardados);
     }
 }
 
@@ -67,27 +117,29 @@ async function guardarContactoMedico() {
     const email = document.getElementById("contactoMedicoEmail").value.trim();
     const tel = itiMedico ? itiMedico.getNumber() : "";
 
-    if (!nombre && !tel && !email) {
-        alert("Por favor ingresa al menos un dato del médico.");
+    if (!nombre) {
+        alert("Por favor ingresa al menos el nombre del médico.");
         return;
     }
 
-    try {
-        await db.collection("usuarios").doc(user.uid).collection("contactos").doc("medico").set({
-            nombre: nombre,
-            tel: tel,
-            email: email,
-            ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
+    const datosActualizados = {
+        nombre: nombre,
+        tel: tel,
+        email: email,
+        ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+    };
 
-        alert("🩺 Contacto del Médico guardado correctamente.");
+    try {
+        await db.collection("usuarios").doc(user.uid).collection("contactos").doc("medico").set(datosActualizados, { merge: true });
+        datosMedicoGuardados = datosActualizados;
+        mostrarVistaBloqueadaMedico(datosMedicoGuardados);
     } catch (error) {
         alert("Error al guardar: " + error.message);
     }
 }
 
 // ==========================================
-// 2. GESTIÓN DE FAMILIARES A CARGO (MULTIPLE)
+// 2. GESTIÓN DE FAMILIARES A CARGO
 // ==========================================
 function mostrarFormNuevoFamiliar() {
     document.getElementById("formNuevoFamiliar").style.display = "block";
@@ -146,18 +198,29 @@ function escucharFamiliares(uid) {
 
         snapshot.forEach((doc) => {
             const fam = { id: doc.id, ...doc.data() };
+            
+            const linkTelHTML = fam.tel 
+                ? `<a href="tel:${fam.tel}" class="link-contacto">${fam.tel}</a>`
+                : `<span style="color:#757575;">No registrado</span>`;
+
+            const linkEmailHTML = fam.email 
+                ? `<a href="mailto:${fam.email}" class="link-contacto" style="font-weight: normal;">${fam.email}</a>`
+                : `<span style="color:#757575;">No registrado</span>`;
+
             contenedor.innerHTML += `
-                <div id="cardFamiliar_${fam.id}" style="background-color: #ffffff; border: 1px solid #bbdefb; border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                <div id="cardFamiliar_${fam.id}" style="background-color: #ffffff; border: 1px solid #bbdefb; border-radius: 8px; padding: 15px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                     <div id="viewFamiliar_${fam.id}">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <strong style="color: #1565c0; font-size: 16px;">👤 ${fam.nombre}</strong>
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e0e0e0; padding-bottom: 8px; margin-bottom: 10px;">
+                            <strong style="color: #1565c0; font-size: 18px;">👤 ${fam.nombre}</strong>
                             <div>
-                                <button onclick="activarEdicionFamiliar('${fam.id}', '${fam.nombre}', '${fam.email || ''}', '${fam.tel || ''}')" style="background:none; border:none; cursor:pointer;" title="Editar">✏️</button>
-                                <button onclick="borrarFamiliar('${fam.id}')" style="background:none; border:none; cursor:pointer;" title="Eliminar">🗑️</button>
+                                <button onclick="activarEdicionFamiliar('${fam.id}', '${fam.nombre}', '${fam.email || ''}', '${fam.tel || ''}')" style="background:none; border:none; cursor:pointer; font-size: 16px; margin-right: 5px;" title="Editar">✏️</button>
+                                <button onclick="borrarFamiliar('${fam.id}')" style="background:none; border:none; cursor:pointer; font-size: 16px;" title="Eliminar">🗑️</button>
                             </div>
                         </div>
-                        <p style="margin: 5px 0 0 0; font-size: 14px; color: #333;">📞 Teléfono: ${fam.tel || 'No registrado'}</p>
-                        <p style="margin: 3px 0 0 0; font-size: 14px; color: #333;">✉️ Mail: ${fam.email || 'No registrado'}</p>
+                        <div style="font-size: 15px; line-height: 1.6;">
+                            <p style="margin: 4px 0;"><strong>📞 Teléfono:</strong> ${linkTelHTML}</p>
+                            <p style="margin: 4px 0;"><strong>✉️ Mail:</strong> ${linkEmailHTML}</p>
+                        </div>
                     </div>
 
                     <div id="editFamiliar_${fam.id}" style="display: none;">
@@ -165,14 +228,14 @@ function escucharFamiliares(uid) {
                         <input type="text" id="editFamNombre_${fam.id}" value="${fam.nombre}" style="width: 100%; margin-bottom: 8px; padding: 6px; box-sizing: border-box;">
 
                         <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 2px;">Teléfono:</label>
-                        <div style="margin-bottom: 8px;">
+                        <div style="margin-bottom: 8px; width: 100%;">
                             <input type="tel" id="editFamTel_${fam.id}" style="width: 100%;">
                         </div>
 
                         <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 2px;">Email:</label>
                         <input type="email" id="editFamEmail_${fam.id}" value="${fam.email || ''}" style="width: 100%; margin-bottom: 8px; padding: 6px; box-sizing: border-box;">
 
-                        <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <div style="display: flex; gap: 8px; margin-top: 10px;">
                             <button onclick="guardarEdicionFamiliar('${fam.id}')" style="background-color: #1976d2; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Guardar</button>
                             <button onclick="cancelarEdicionFamiliar('${fam.id}')" style="background-color: #757575; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Cancelar</button>
                         </div>
