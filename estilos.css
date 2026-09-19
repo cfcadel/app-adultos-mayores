@@ -215,4 +215,47 @@ li {
         flex: 1;
         margin-bottom: 0;
     }
+
+    /* ===================================================
+   RESPONSIVE PARA SECCIÓN PRESUPUESTO
+   =================================================== */
+
+.tarjeta-presupuesto {
+    background-color: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+    max-width: 500px;
+    margin: 20px auto;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    /* Ocultar encabezados secundarios de la tabla en móvil */
+    table th.col-recurrente,
+    table td.col-recurrente,
+    table th.col-monto,
+    table td.col-monto {
+        display: none !important;
+    }
+
+    /* Convertir el formulario de gastos en tarjeta vertical en pantallas chicas */
+    tr.form-crear-gasto {
+        display: block !important;
+        width: 100% !important;
+        background-color: #fffde7;
+        padding: 15px;
+        border: 1px solid #ffe082;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        box-sizing: border-box;
+    }
+
+    tr.form-crear-gasto td {
+        display: block !important;
+        width: 100% !important;
+        padding: 4px 0 !important;
+        border: none !important;
+    }
+}
 }
