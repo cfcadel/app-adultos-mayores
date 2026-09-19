@@ -117,41 +117,40 @@
     <h2 style="text-align: left; margin-bottom: 15px;">📞 Contactos</h2>
     
     <!-- Contacto: Médico de Cabecera -->
-    <div style="background-color: #f1f8e9; border: 1px solid #c8e6c9; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
-        <h3 style="margin: 0 0 12px 0; color: #2e7d32; font-size: 18px;">🩺 Médico de Cabecera</h3>
+<div style="background-color: #f1f8e9; border: 1px solid #c8e6c9; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+    <h3 style="margin: 0 0 12px 0; color: #2e7d32; font-size: 18px;">🩺 Médico de Cabecera</h3>
 
-        <!-- VISTA DE LECTURA (Estructura idéntica a Familiares) -->
-        <div id="vistaMedico" style="display: none; background: #ffffff; border: 1px solid #c8e6c9; border-radius: 8px; padding: 15px; text-align: left; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #c8e6c9; padding-bottom: 8px; margin-bottom: 10px;">
-                <strong style="color: #2e7d32; font-size: 18px; white-space: nowrap;">👤 <span id="txtMedicoNombre">-</span></strong>
-                <button onclick="activarEdicionMedico()" style="background:none; border:none; cursor:pointer; font-size: 16px;" title="Editar">✏️</button>
-            </div>
-            <div style="font-size: 15px; line-height: 1.6;">
-                <p style="margin: 4px 0;"><strong>📞 Teléfono:</strong> <a id="linkMedicoTel" href="#" class="link-contacto-medico">-</a></p>
-                <p style="margin: 4px 0;"><strong>✉️ Mail:</strong> <a id="linkMedicoEmail" href="#" class="link-contacto-medico" style="font-weight: normal;">-</a></p>
-            </div>
+    <!-- VISTA DE LECTURA (BOTÓN ALINEADO 100% A LA DERECHA) -->
+    <div id="vistaMedico" style="display: none; background: #ffffff; border: 1px solid #c8e6c9; border-radius: 8px; padding: 15px; text-align: left; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid #c8e6c9; padding-bottom: 8px; margin-bottom: 10px; box-sizing: border-box;">
+            <strong style="color: #2e7d32; font-size: 18px; margin: 0;">👤 <span id="txtMedicoNombre">-</span></strong>
+            <button onclick="activarEdicionMedico()" style="background:none; border:none; cursor:pointer; font-size: 16px; padding: 0; line-height: 1;" title="Editar">✏️</button>
         </div>
-
-        <!-- FORMULARIO DE EDICIÓN DEL MÉDICO -->
-        <div id="formMedico" style="text-align: left;">
-            <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px;">Nombre del Médico:</label>
-            <input type="text" id="contactoMedicoNombre" placeholder="Ej: Dr. Carlos Pérez" style="width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box;">
-            
-            <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px;">Teléfono de Contacto:</label>
-            <div style="margin-bottom: 10px; width: 100%;">
-                <input type="tel" id="contactoMedicoTel" style="width: 100%;">
-            </div>
-
-            <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px;">Correo Electrónico (Mail):</label>
-            <input type="email" id="contactoMedicoEmail" placeholder="Ej: medico@ejemplo.com" style="width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box;">
-            
-            <!-- Botones 50% - 50% simétricos -->
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button class="btn-azul" onclick="guardarContactoMedico()" style="flex: 1; padding: 10px;">Guardar Médico</button>
-                <button id="btnCancelarMedico" onclick="cancelarEdicionMedico()" style="display: none; flex: 1; background-color: #757575; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">Cancelar</button>
-            </div>
+        <div style="font-size: 15px; line-height: 1.6;">
+            <p style="margin: 4px 0;"><strong>📞 Teléfono:</strong> <a id="linkMedicoTel" href="#" class="link-contacto-medico">-</a></p>
+            <p style="margin: 4px 0;"><strong>✉️ Mail:</strong> <a id="linkMedicoEmail" href="#" class="link-contacto-medico" style="font-weight: normal;">-</a></p>
         </div>
     </div>
+
+    <!-- FORMULARIO DE EDICIÓN DEL MÉDICO -->
+    <div id="formMedico" style="text-align: left;">
+        <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px;">Nombre del Médico:</label>
+        <input type="text" id="contactoMedicoNombre" placeholder="Ej: Dr. Carlos Pérez" style="width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box;">
+        
+        <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px;">Teléfono de Contacto:</label>
+        <div style="margin-bottom: 10px; width: 100%;">
+            <input type="tel" id="contactoMedicoTel" style="width: 100%;">
+        </div>
+
+        <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px;">Correo Electrónico (Mail):</label>
+        <input type="email" id="contactoMedicoEmail" placeholder="Ej: medico@ejemplo.com" style="width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box;">
+        
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="btn-azul" onclick="guardarContactoMedico()" style="flex: 1; padding: 10px;">Guardar Médico</button>
+            <button id="btnCancelarMedico" onclick="cancelarEdicionMedico()" style="display: none; flex: 1; background-color: #757575; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">Cancelar</button>
+        </div>
+    </div>
+</div>
 
     <!-- Sección: Familiares a Cargo -->
     <div style="background-color: #e3f2fd; border: 1px solid #bbdefb; border-radius: 10px; padding: 15px; text-align: left;">
