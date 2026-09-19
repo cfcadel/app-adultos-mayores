@@ -110,8 +110,7 @@
             </div>
         </div>
 
-        <!-- SECCIÓN FINANZAS / PRESUPUESTO -->
-<!-- SECCIÓN FINANZAS / PRESUPUESTO -->
+ <!-- SECCIÓN FINANZAS / PRESUPUESTO -->
 <div id="seccionFinanzas" class="tarjeta" style="display: none; max-width: 95%; margin: 20px auto;">
     <h2>💰 Presupuesto Mensual</h2>
     <h3 id="tituloMesActual" style="color: #2e7d32; margin-top: -10px;"></h3>
@@ -121,9 +120,10 @@
 
     <!-- 2. Resumen del Estado Financiero -->
     <div id="contenedorResumen" style="display: none;" class="caja-resumen">
-        <p style="font-size: 14px; color: #555;"><strong>Saldo Mes Anterior:</strong> <span id="txtSaldoAnterior">$0</span></p>
+        <!-- Se quitó el font-size pequeño para igualar la lectura al Ingreso Principal -->
+        <p style="color: #555;"><strong>Saldo Mes Anterior:</strong> <span id="txtSaldoAnterior">$0</span></p>
         <p><strong>Ingreso Principal:</strong> <span id="txtIngreso">$0</span> <button onclick="activarEdicionIngreso()" style="background:none; border:none; cursor:pointer;" title="Editar ingreso">✏️</button></p>
-        <p style="font-size: 14px; color: #1976d2;"><strong>Ingresos Adicionales:</strong> <span id="txtTotalIngresosAdic">$0</span></p>
+        <p style="color: #1976d2;"><strong>Ingresos Adicionales:</strong> <span id="txtTotalIngresosAdic">$0</span></p>
         <p style="color: #c62828;"><strong>Total Gastos:</strong> <span id="txtTotalGastos">$0</span></p>
         <hr style="border: 0.5px solid #a5d6a7;">
         <p style="font-size: 18px;"><strong>Disponible:</strong> <span id="txtDisponible" style="font-weight: bold; color: #2e7d32;">$0</span></p>
@@ -141,6 +141,7 @@
                     <thead>
                         <tr style="border-bottom: 2px solid #1976d2;">
                             <th style="padding: 10px; text-align: left;">DESCRIPCIÓN</th>
+                            <th class="col-recurrente" style="padding: 10px; text-align: center;">RECURRENTE</th>
                             <th class="col-monto" style="padding: 10px; text-align: right;">MONTO</th>
                             <th style="padding: 10px; text-align: center;">ACCIONES</th>
                         </tr>

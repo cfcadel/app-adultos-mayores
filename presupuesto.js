@@ -59,13 +59,14 @@ async function realizarTransicionDeMes(uid, claveMesActual) {
     let nuevoIngresoPrincipal = 0;
     let nuevoSaldoAnterior = 0;
     let gastosRecurrentesACopiar = [];
+    let ingresosRecurrentesACopiar = [];
 
     if (docAnt.exists) {
         const dataAnt = docAnt.data();
         const ingresoAnt = dataAnt.ingresoPrincipal || 0;
         const saldoArrastradoAnt = dataAnt.saldoAnterior || 0;
 
-        // 1. Calcular Saldo Final del mes anterior
+        // 1. Calcular Gastos e identificar recurrentes
         let totalGastosAnt = 0;
         const snapshotGastos = await mesAntRef.collection("gastos").get();
         snapshotGastos.forEach(doc => {
@@ -76,15 +77,21 @@ async function realizarTransicionDeMes(uid, claveMesActual) {
             }
         });
 
+        // 2. Calcular Ingresos Adicionales e identificar recurrentes
         let totalIngresosAdicAnt = 0;
         const snapshotIngresos = await mesAntRef.collection("ingresosAdicionales").get();
         snapshotIngresos.forEach(doc => {
-            totalIngresosAdicAnt += parseFloat(doc.data().monto) || 0;
+            const ing = doc.data();
+            totalIngresosAdicAnt += parseFloat(ing.monto) || 0;
+            if (ing.recurrente === 'si') {
+                ingresosRecurrentesACopiar.push(ing.nombre);
+            }
         });
 
+        // Saldo Final del mes anterior
         nuevoSaldoAnterior = (ingresoAnt + saldoArrastradoAnt + totalIngresosAdicAnt) - totalGastosAnt;
 
-        // 2. Preguntar al usuario si mantiene su ingreso principal
+        // Preguntar al usuario si mantiene su ingreso principal
         if (ingresoAnt > 0) {
             const mantener = confirm(`¡Comenzó un nuevo mes!\n\nTu Ingreso Principal (Jubilación/Sueldo) anterior fue de $${ingresoAnt}.\n¿Sigue siendo el mismo monto para este mes?`);
             if (mantener) {
@@ -93,7 +100,7 @@ async function realizarTransicionDeMes(uid, claveMesActual) {
         }
     }
 
-    // 3. Crear el nuevo mes usando Batch para asegurar todo en 1 solo paso
+    // 3. Crear el nuevo mes usando Batch
     const batch = db.batch();
     const nuevoMesRef = db.collection("usuarios").doc(uid).collection("presupuestos").doc(claveMesActual);
     
@@ -109,7 +116,18 @@ async function realizarTransicionDeMes(uid, claveMesActual) {
         batch.set(nuevoGastoRef, {
             nombre: nombreGasto,
             recurrente: 'si',
-            monto: 0, // En 0 para que el usuario lo rellene
+            monto: 0,
+            fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    });
+
+    // 5. Copiar los ingresos adicionales recurrentes con valor $0
+    ingresosRecurrentesACopiar.forEach(nombreIngreso => {
+        const nuevoIngresoRef = nuevoMesRef.collection("ingresosAdicionales").doc();
+        batch.set(nuevoIngresoRef, {
+            nombre: nombreIngreso,
+            recurrente: 'si',
+            monto: 0,
             fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
         });
     });
@@ -123,7 +141,6 @@ async function realizarTransicionDeMes(uid, claveMesActual) {
 function escucharMesActual(uid, claveMes) {
     const mesRef = db.collection("usuarios").doc(uid).collection("presupuestos").doc(claveMes);
 
-    // Escuchar documento principal
     mesRef.onSnapshot((doc) => {
         if (doc.exists) {
             const data = doc.data();
@@ -138,7 +155,6 @@ function escucharMesActual(uid, claveMes) {
         }
     });
 
-    // Escuchar Gastos
     mesRef.collection("gastos").orderBy("fechaRegistro", "desc").onSnapshot((snapshot) => {
         gastosGuardados = [];
         snapshot.forEach(doc => gastosGuardados.push({ id: doc.id, ...doc.data() }));
@@ -148,7 +164,6 @@ function escucharMesActual(uid, claveMes) {
         }
     });
 
-    // Escuchar Ingresos Adicionales
     mesRef.collection("ingresosAdicionales").orderBy("fechaRegistro", "desc").onSnapshot((snapshot) => {
         ingresosAdicGuardados = [];
         snapshot.forEach(doc => ingresosAdicGuardados.push({ id: doc.id, ...doc.data() }));
@@ -173,8 +188,8 @@ function renderizarSolicitudIngreso() {
     document.getElementById("contenedorIngreso").innerHTML = `
         <div style="background-color: #fff3e0; border: 2px solid #ffe0b2; padding: 15px; border-radius: 10px; margin: 15px 0;">
             <p style="color: #e65100; font-weight: bold; margin-top: 0;">Falta indicar tu Ingreso Principal de este mes.</p>
-            <p style="font-size: 13px; margin-bottom: 10px;">Saldo arrastrado del mes pasado: <strong>${formatMoneda(saldoAnteriorActual)}</strong></p>
-            <label style="display:block; text-align:left; font-size:13px; font-weight:bold; margin-bottom:4px;">Ingreso Principal (Jubilación/Sueldo) ($):</label>
+            <p style="font-size: 15px; margin-bottom: 10px;">Saldo arrastrado del mes pasado: <strong>${formatMoneda(saldoAnteriorActual)}</strong></p>
+            <label style="display:block; text-align:left; font-size:14px; font-weight:bold; margin-bottom:4px;">Ingreso Principal (Jubilación/Sueldo) ($):</label>
             <input type="number" id="inputIngresoMensual" placeholder="Ej: 500000" min="0">
             <button onclick="guardarIngresoMensual()" style="background-color: #2e7d32; font-weight: bold; margin-top: 5px;">Guardar Ingreso</button>
         </div>
@@ -186,7 +201,7 @@ function activarEdicionIngreso() {
     document.getElementById("contenedorIngreso").style.display = "block";
     document.getElementById("contenedorIngreso").innerHTML = `
         <div style="background-color: #e8f5e9; border: 1px solid #a5d6a7; padding: 12px; border-radius: 10px; margin: 15px 0;">
-            <label style="display:block; text-align:left; font-size:12px; font-weight:bold; margin-bottom:4px;">Modificar Ingreso Principal ($):</label>
+            <label style="display:block; text-align:left; font-size:13px; font-weight:bold; margin-bottom:4px;">Modificar Ingreso Principal ($):</label>
             <input type="number" id="inputIngresoMensual" value="${ingresoPrincipalActual}" min="0">
             <div style="display:flex; gap:10px; margin-top:5px;">
                 <button onclick="guardarIngresoMensual()" style="background-color: #2e7d32; padding: 8px;">Actualizar</button>
@@ -256,9 +271,12 @@ function renderizarTablaIngresosAdic(idEdicion = null) {
         tbody.innerHTML += `
             <tr style="background-color: #fff9c4;">
                 <td style="padding: 5px;">
-                    <input type="text" id="inputNombreIngreso" placeholder="Ej: Venta tortas, Regalo">
+                    <input type="text" id="inputNombreIngreso" placeholder="Ej: Venta tortas">
                 </td>
-                <td style="padding: 5px;">
+                <td class="col-recurrente" style="padding: 5px;">
+                    <select id="selectRecurrenteIngreso"><option value="no">No</option><option value="si">Sí</option></select>
+                </td>
+                <td class="col-monto" style="padding: 5px;">
                     <input type="number" id="inputMontoIngreso" placeholder="0">
                 </td>
                 <td style="padding: 5px; display: flex; gap: 5px;">
@@ -270,11 +288,19 @@ function renderizarTablaIngresosAdic(idEdicion = null) {
     }
 
     ingresosAdicGuardados.forEach((ing) => {
+        const alertaCero = ing.monto === 0 ? "⚠️ Cargar monto" : "";
+
         if (idEdicion === ing.id) {
             tbody.innerHTML += `
                 <tr style="background-color: #e3f2fd;">
                     <td style="padding: 5px;"><input type="text" id="editNombreIngreso_${ing.id}" value="${ing.nombre}"></td>
-                    <td style="padding: 5px;"><input type="number" id="editMontoIngreso_${ing.id}" value="${ing.monto}"></td>
+                    <td class="col-recurrente" style="padding: 5px;">
+                        <select id="editRecurrenteIngreso_${ing.id}">
+                            <option value="si" ${ing.recurrente === 'si' ? 'selected' : ''}>Sí</option>
+                            <option value="no" ${ing.recurrente === 'no' ? 'selected' : ''}>No</option>
+                        </select>
+                    </td>
+                    <td class="col-monto" style="padding: 5px;"><input type="number" id="editMontoIngreso_${ing.id}" value="${ing.monto}"></td>
                     <td style="padding: 5px; display: flex; gap: 5px;">
                         <button onclick="actualizarIngresoAdicional('${ing.id}')" style="background-color: #1976d2; color: white; padding: 8px; border: none; border-radius: 4px; flex:1;">Guardar</button>
                         <button onclick="renderizarTablaIngresosAdic()" style="background-color: #757575; color: white; padding: 8px; border: none; border-radius: 4px; flex:1;">Cancelar</button>
@@ -282,10 +308,13 @@ function renderizarTablaIngresosAdic(idEdicion = null) {
                 </tr>
             `;
         } else {
+            const estiloFila = ing.monto === 0 ? "background-color: #e3f2fd; border-left: 4px solid #1976d2;" : "border-bottom: 1px solid #ddd;";
+
             tbody.innerHTML += `
-                <tr style="border-bottom: 1px solid #ddd;">
-                    <td style="padding: 8px;"><strong>${ing.nombre}</strong></td>
-                    <td style="padding: 8px; text-align: right; font-weight: bold; color: #1976d2;">+ ${formatMoneda(ing.monto)}</td>
+                <tr style="${estiloFila}">
+                    <td style="padding: 8px;"><strong>${ing.nombre}</strong> <br><small style="color:#1976d2;">${alertaCero}</small></td>
+                    <td class="col-recurrente" style="padding: 8px; text-align: center; font-size: 13px; color: #555;">${ing.recurrente === "si" ? "🔄 Sí" : "📌 No"}</td>
+                    <td class="col-monto" style="padding: 8px; text-align: right; font-weight: bold; color: #1976d2;">+ ${formatMoneda(ing.monto)}</td>
                     <td style="padding: 8px; text-align: center;">
                         <button onclick="renderizarTablaIngresosAdic('${ing.id}')" style="background:none; border:none; cursor:pointer;">✏️</button>
                         <button onclick="borrarIngresoAdicional('${ing.id}')" style="background:none; border:none; cursor:pointer;">🗑️</button>
@@ -301,25 +330,29 @@ function mostrarFilaNuevoIngresoAdic() { renderizarTablaIngresosAdic("NUEVO"); }
 async function guardarIngresoAdicional() {
     const usuario = auth.currentUser;
     const nombre = document.getElementById("inputNombreIngreso").value.trim();
+    const recurrente = document.getElementById("selectRecurrenteIngreso").value;
     const monto = parseFloat(document.getElementById("inputMontoIngreso").value);
 
-    if (!nombre || isNaN(monto) || monto <= 0) return alert("Completa los datos correctamente.");
+    if (!nombre || isNaN(monto) || monto < 0) return alert("Completa los datos correctamente.");
     
     const { claveMes } = obtenerInfoMesActual();
     await db.collection("usuarios").doc(usuario.uid).collection("presupuestos").doc(claveMes).collection("ingresosAdicionales").add({
-        nombre, monto, fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
+        nombre, recurrente, monto, fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
     });
 }
 
 async function actualizarIngresoAdicional(id) {
     const usuario = auth.currentUser;
     const nombre = document.getElementById(`editNombreIngreso_${id}`).value.trim();
+    const recurrente = document.getElementById(`editRecurrenteIngreso_${id}`).value;
     const monto = parseFloat(document.getElementById(`editMontoIngreso_${id}`).value);
 
-    if (!nombre || isNaN(monto) || monto <= 0) return alert("Datos inválidos.");
+    if (!nombre || isNaN(monto) || monto < 0) return alert("Datos inválidos.");
     
     const { claveMes } = obtenerInfoMesActual();
-    await db.collection("usuarios").doc(usuario.uid).collection("presupuestos").doc(claveMes).collection("ingresosAdicionales").doc(id).update({ nombre, monto });
+    await db.collection("usuarios").doc(usuario.uid).collection("presupuestos").doc(claveMes).collection("ingresosAdicionales").doc(id).update({ 
+        nombre, recurrente, monto 
+    });
 }
 
 async function borrarIngresoAdicional(id) {
@@ -354,7 +387,6 @@ function renderizarTablaGastos(idEdicion = null) {
     }
 
     gastosGuardados.forEach((gasto) => {
-        // Marcamos visualmente si es un gasto recurrente arrastrado que aún está en $0
         const alertaCero = gasto.monto === 0 ? "⚠️ Cargar monto" : "";
 
         if (idEdicion === gasto.id) {
