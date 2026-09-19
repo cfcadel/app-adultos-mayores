@@ -249,48 +249,27 @@
 
     <div id="seccionTablasPresupuesto" style="display: none;">
         
-        <!-- 3. Tabla de Ingresos Adicionales -->
-        <div style="margin-top: 25px; background-color: #e3f2fd; padding: 10px; border-radius: 10px; border: 1px solid #bbdefb;">
+        <!-- 3. Contenedor de Ingresos Adicionales -->
+        <div style="margin-top: 25px; background-color: #e3f2fd; padding: 15px; border-radius: 12px; border: 1px solid #bbdefb;">
             <h4 style="margin-top: 0; color: #1565c0;">📈 Ingresos Adicionales</h4>
-            <button id="btnAgregarIngresoAdic" onclick="mostrarFilaNuevoIngresoAdic()" class="btn-azul" style="background-color: #1976d2;">+ Agregar Ingreso Extra</button>
+            <button id="btnAgregarIngresoAdic" onclick="mostrarFilaNuevoIngresoAdic()" class="btn-azul" style="background-color: #1976d2; width: 100%; margin-bottom: 15px; padding: 10px; font-weight: bold;">+ Agregar Ingreso Extra</button>
 
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px;">
-                    <thead>
-                        <tr style="border-bottom: 2px solid #1976d2;">
-                            <th style="padding: 10px; text-align: left;">DESCRIPCIÓN</th>
-                            <th class="col-recurrente" style="padding: 10px; text-align: center;">RECURRENTE</th>
-                            <th class="col-monto" style="padding: 10px; text-align: right;">MONTO</th>
-                            <th style="padding: 10px; text-align: center;">ACCIONES</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaIngresosAdicBody"></tbody>
-                </table>
-            </div>
+            <!-- Lista Dinámica de Ingresos Adicionales -->
+            <div id="tablaIngresosAdicBody"></div>
         </div>
 
-        <!-- 4. Tabla de Gastos -->
-        <div style="margin-top: 25px;">
+        <!-- 4. Contenedor de Gastos -->
+        <div style="margin-top: 25px; background-color: #fffde7; padding: 15px; border-radius: 12px; border: 1px solid #fff59d;">
             <h4 style="margin-top: 0; color: #c62828;">📉 Mis Gastos</h4>
-            <button id="btnAgregarGasto" onclick="mostrarFilaNuevoGasto()" class="btn-azul" style="background-color: #c62828;">+ Agregar Gasto</button>
+            <button id="btnAgregarGasto" onclick="mostrarFilaNuevoGasto()" class="btn-azul" style="background-color: #c62828; width: 100%; margin-bottom: 15px; padding: 10px; font-weight: bold;">+ Agregar Gasto</button>
 
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px;">
-                    <thead>
-                        <tr style="background-color: #ffebee; border-bottom: 2px solid #c62828;">
-                            <th style="padding: 10px; text-align: left;">GASTO</th>
-                            <th class="col-recurrente" style="padding: 10px; text-align: center;">RECURRENTE</th>
-                            <th class="col-monto" style="padding: 10px; text-align: right;">MONTO</th>
-                            <th style="padding: 10px; text-align: center;">ACCIONES</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaGastosBody"></tbody>
-                </table>
-            </div>
+            <!-- Lista Dinámica de Gastos -->
+            <div id="tablaGastosBody"></div>
         </div>
         
     </div>
 </div>
+
 
         <!-- SECCIÓN MI USUARIO (PERFIL) -->
         <div id="seccionMiUsuario" class="tarjeta" style="display: none;">

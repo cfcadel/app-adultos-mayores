@@ -314,71 +314,101 @@ async function guardarIngresoMensual() {
 }
 
 // ==========================================
-// GESTIÓN DE INGRESOS ADICIONALES
+// GESTIÓN DE INGRESOS ADICIONALES (TARJETAS)
 // ==========================================
 function renderizarTablaIngresosAdic(idEdicion = null) {
-    const tbody = document.getElementById("tablaIngresosAdicBody");
-    if (!tbody) return;
-    tbody.innerHTML = "";
+    const contenedor = document.getElementById("tablaIngresosAdicBody");
+    if (!contenedor) return;
+    contenedor.innerHTML = "";
 
     const esMesActual = (claveMesSeleccionada === claveMesActual);
 
+    // Formulario de creación de nuevo ingreso extra
     if (idEdicion === "NUEVO" && esMesActual) {
-        tbody.innerHTML += `
-            <tr style="background-color: #fff9c4;">
-                <td style="padding: 5px;">
-                    <input type="text" id="inputNombreIngreso" placeholder="Ej: Venta tortas">
-                </td>
-                <td class="col-recurrente" style="padding: 5px;">
-                    <select id="selectRecurrenteIngreso"><option value="no">No</option><option value="si">Sí</option></select>
-                </td>
-                <td class="col-monto" style="padding: 5px;">
-                    <input type="number" id="inputMontoIngreso" placeholder="0">
-                </td>
-                <td style="padding: 5px; display: flex; gap: 5px;">
-                    <button onclick="guardarIngresoAdicional()" style="background-color: #1976d2; color: white; padding: 8px; border: none; border-radius: 4px; flex: 1;">Guardar</button>
-                    <button onclick="renderizarTablaIngresosAdic()" style="background-color: #757575; color: white; padding: 8px; border: none; border-radius: 4px; flex: 1;">Cancelar</button>
-                </td>
-            </tr>
+        contenedor.innerHTML += `
+            <div style="background-color: #fff9c4; border: 1px solid #fbc02d; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                <div style="margin-bottom: 8px;">
+                    <label style="font-size: 11px; font-weight: bold; color: #555;">DESCRIPCIÓN</label>
+                    <input type="text" id="inputNombreIngreso" placeholder="Ej: Venta tortas" style="width: 100%; padding: 6px; box-sizing: border-box; margin-top: 2px;">
+                </div>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 11px; font-weight: bold; color: #555;">RECURRENTE</label>
+                        <select id="selectRecurrenteIngreso" style="width: 100%; padding: 6px; margin-top: 2px;">
+                            <option value="no">No</option>
+                            <option value="si">Sí</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 11px; font-weight: bold; color: #555;">MONTO ($)</label>
+                        <input type="number" id="inputMontoIngreso" placeholder="0" style="width: 100%; padding: 6px; box-sizing: border-box; margin-top: 2px;">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="guardarIngresoAdicional()" style="background-color: #1976d2; color: white; padding: 8px; border: none; border-radius: 4px; flex: 1; font-weight: bold; cursor: pointer;">Guardar</button>
+                    <button onclick="renderizarTablaIngresosAdic()" style="background-color: #757575; color: white; padding: 8px; border: none; border-radius: 4px; flex: 1; font-weight: bold; cursor: pointer;">Cancelar</button>
+                </div>
+            </div>
         `;
     }
 
     ingresosAdicGuardados.forEach((ing) => {
         const alertaCero = (ing.monto === 0 && esMesActual) ? "⚠️ Cargar monto" : "";
 
+        // Formulario de edición de un ingreso existente
         if (idEdicion === ing.id && esMesActual) {
-            tbody.innerHTML += `
-                <tr style="background-color: #e3f2fd;">
-                    <td style="padding: 5px;"><input type="text" id="editNombreIngreso_${ing.id}" value="${ing.nombre}"></td>
-                    <td class="col-recurrente" style="padding: 5px;">
-                        <select id="editRecurrenteIngreso_${ing.id}">
-                            <option value="si" ${ing.recurrente === 'si' ? 'selected' : ''}>Sí</option>
-                            <option value="no" ${ing.recurrente === 'no' ? 'selected' : ''}>No</option>
-                        </select>
-                    </td>
-                    <td class="col-monto" style="padding: 5px;"><input type="number" id="editMontoIngreso_${ing.id}" value="${ing.monto}"></td>
-                    <td style="padding: 5px; display: flex; gap: 5px;">
-                        <button onclick="actualizarIngresoAdicional('${ing.id}')" style="background-color: #1976d2; color: white; padding: 8px; border: none; border-radius: 4px; flex:1;">Guardar</button>
-                        <button onclick="renderizarTablaIngresosAdic()" style="background-color: #757575; color: white; padding: 8px; border: none; border-radius: 4px; flex:1;">Cancelar</button>
-                    </td>
-                </tr>
+            contenedor.innerHTML += `
+                <div style="background-color: #e3f2fd; border: 1px solid #1976d2; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="margin-bottom: 8px;">
+                        <label style="font-size: 11px; font-weight: bold; color: #555;">DESCRIPCIÓN</label>
+                        <input type="text" id="editNombreIngreso_${ing.id}" value="${ing.nombre}" style="width: 100%; padding: 6px; box-sizing: border-box; margin-top: 2px;">
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <div style="flex: 1;">
+                            <label style="font-size: 11px; font-weight: bold; color: #555;">RECURRENTE</label>
+                            <select id="editRecurrenteIngreso_${ing.id}" style="width: 100%; padding: 6px; margin-top: 2px;">
+                                <option value="si" ${ing.recurrente === 'si' ? 'selected' : ''}>Sí</option>
+                                <option value="no" ${ing.recurrente === 'no' ? 'selected' : ''}>No</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 11px; font-weight: bold; color: #555;">MONTO ($)</label>
+                            <input type="number" id="editMontoIngreso_${ing.id}" value="${ing.monto}" style="width: 100%; padding: 6px; box-sizing: border-box; margin-top: 2px;">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="actualizarIngresoAdicional('${ing.id}')" style="background-color: #1976d2; color: white; padding: 8px; border: none; border-radius: 4px; flex: 1; font-weight: bold; cursor: pointer;">Guardar</button>
+                        <button onclick="renderizarTablaIngresosAdic()" style="background-color: #757575; color: white; padding: 8px; border: none; border-radius: 4px; flex: 1; font-weight: bold; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
             `;
         } else {
-            const estiloFila = (ing.monto === 0 && esMesActual) ? "background-color: #e3f2fd; border-left: 4px solid #1976d2;" : "border-bottom: 1px solid #ddd;";
+            // Visualización normal en forma de tarjeta limpia
+            const estiloBorde = (ing.monto === 0 && esMesActual) ? "background-color: #e3f2fd; border-left: 4px solid #1976d2;" : "background-color: #ffffff; border: 1px solid #e0e0e0;";
             
-            // Acciones: Lápiz y Tacho si es el mes actual; Candado si es historial
             const accionesHTML = esMesActual ? `
-                <button onclick="renderizarTablaIngresosAdic('${ing.id}')" style="background:none; border:none; cursor:pointer;">✏️</button>
-                <button onclick="borrarIngresoAdicional('${ing.id}')" style="background:none; border:none; cursor:pointer;">🗑️</button>
+                <button onclick="renderizarTablaIngresosAdic('${ing.id}')" style="background:none; border:none; cursor:pointer; font-size: 16px;" title="Editar">✏️</button>
+                <button onclick="borrarIngresoAdicional('${ing.id}')" style="background:none; border:none; cursor:pointer; font-size: 16px;" title="Eliminar">🗑️</button>
             ` : `<span title="Mes cerrado - Solo lectura">🔒</span>`;
 
-            tbody.innerHTML += `
-                <tr style="${estiloFila}">
-                    <td style="padding: 8px;"><strong>${ing.nombre}</strong> <br><small style="color:#1976d2;">${alertaCero}</small></td>
-                    <td class="col-recurrente" style="padding: 8px; text-align: center; font-size: 13px; color: #555;">${ing.recurrente === "si" ? "🔄 Sí" : "📌 No"}</td>
-                    <td class="col-monto" style="padding: 8px; text-align: right; font-weight: bold; color: #1976d2;">+ ${formatMoneda(ing.monto)}</td>
-                    <td style="padding: 8px; text-align: center;">${accionesHTML}</td>
-                </tr>
+            contenedor.innerHTML += `
+                <div style="${estiloBorde} padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="font-size: 14px; color: #333;">${ing.nombre}</strong>
+                        <div style="font-size: 12px; color: #555; margin-top: 2px;">
+                            ${ing.recurrente === "si" ? "🔄 Recurrente" : "📌 Único"} 
+                            ${alertaCero ? `<span style="color:#1976d2; font-weight: bold; margin-left: 6px;">${alertaCero}</span>` : ""}
+                        </div>
+                    </div>
+                    <div style="text-align: right; display: flex; align-items: center; gap: 12px;">
+                        <div>
+                            <span style="font-size: 15px; font-weight: bold; color: #1976d2;">+ ${formatMoneda(ing.monto)}</span>
+                        </div>
+                        <div style="display: flex; gap: 4px;">
+                            ${accionesHTML}
+                        </div>
+                    </div>
+                </div>
             `;
         }
     });
@@ -427,66 +457,101 @@ async function borrarIngresoAdicional(id) {
 
 
 // ==========================================
-// GESTIÓN DE GASTOS MENSUALES
+// GESTIÓN DE GASTOS MENSUALES (TARJETAS)
 // ==========================================
 function renderizarTablaGastos(idEdicion = null) {
-    const tbody = document.getElementById("tablaGastosBody");
-    if (!tbody) return;
-    tbody.innerHTML = "";
+    const contenedor = document.getElementById("tablaGastosBody");
+    if (!contenedor) return;
+    contenedor.innerHTML = "";
 
     const esMesActual = (claveMesSeleccionada === claveMesActual);
 
+    // Formulario de creación de nuevo gasto
     if (idEdicion === "NUEVO" && esMesActual) {
-        tbody.innerHTML += `
-            <tr class="form-crear-gasto" style="background-color: #fff9c4;">
-                <td style="padding: 5px;"><input type="text" id="inputNombreGasto" placeholder="Ej: Luz"></td>
-                <td class="col-recurrente" style="padding: 5px;">
-                    <select id="selectRecurrente"><option value="si">Sí</option><option value="no">No</option></select>
-                </td>
-                <td class="col-monto" style="padding: 5px;"><input type="number" id="inputMontoGasto" placeholder="0"></td>
-                <td class="td-acciones" style="padding: 5px; display: flex; gap: 5px;">
-                    <button onclick="guardarNuevoGasto()" style="background-color: #c62828; color: white; padding: 8px; border: none; border-radius: 4px; flex: 1;">Guardar</button>
-                    <button onclick="renderizarTablaGastos()" style="background-color: #757575; color: white; padding: 8px; border: none; border-radius: 4px; flex: 1;">Cancelar</button>
-                </td>
-            </tr>
+        contenedor.innerHTML += `
+            <div class="form-crear-gasto" style="background-color: #fff9c4; border: 1px solid #fbc02d; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                <div style="margin-bottom: 8px;">
+                    <label style="font-size: 11px; font-weight: bold; color: #555;">GASTO</label>
+                    <input type="text" id="inputNombreGasto" placeholder="Ej: Luz" style="width: 100%; padding: 6px; box-sizing: border-box; margin-top: 2px;">
+                </div>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 11px; font-weight: bold; color: #555;">RECURRENTE</label>
+                        <select id="selectRecurrente" style="width: 100%; padding: 6px; margin-top: 2px;">
+                            <option value="si">Sí</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 11px; font-weight: bold; color: #555;">MONTO ($)</label>
+                        <input type="number" id="inputMontoGasto" placeholder="0" style="width: 100%; padding: 6px; box-sizing: border-box; margin-top: 2px;">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="guardarNuevoGasto()" style="background-color: #c62828; color: white; padding: 8px; border: none; border-radius: 4px; flex: 1; font-weight: bold; cursor: pointer;">Guardar</button>
+                    <button onclick="renderizarTablaGastos()" style="background-color: #757575; color: white; padding: 8px; border: none; border-radius: 4px; flex: 1; font-weight: bold; cursor: pointer;">Cancelar</button>
+                </div>
+            </div>
         `;
     }
 
     gastosGuardados.forEach((gasto) => {
         const alertaCero = (gasto.monto === 0 && esMesActual) ? "⚠️ Cargar monto" : "";
 
+        // Formulario de edición de un gasto existente
         if (idEdicion === gasto.id && esMesActual) {
-            tbody.innerHTML += `
-                <tr class="form-crear-gasto" style="background-color: #ffebee;">
-                    <td style="padding: 5px;"><input type="text" id="editNombreGasto_${gasto.id}" value="${gasto.nombre}"></td>
-                    <td class="col-recurrente" style="padding: 5px;">
-                        <select id="editRecurrente_${gasto.id}">
-                            <option value="si" ${gasto.recurrente === 'si' ? 'selected' : ''}>Sí</option>
-                            <option value="no" ${gasto.recurrente === 'no' ? 'selected' : ''}>No</option>
-                        </select>
-                    </td>
-                    <td class="col-monto" style="padding: 5px;"><input type="number" id="editMontoGasto_${gasto.id}" value="${gasto.monto}"></td>
-                    <td class="td-acciones" style="padding: 5px; display: flex; gap: 5px;">
-                        <button onclick="actualizarGasto('${gasto.id}')" style="background-color: #c62828; color: white; padding: 8px; border: none; border-radius: 4px; flex:1;">Guardar</button>
-                        <button onclick="renderizarTablaGastos()" style="background-color: #757575; color: white; padding: 8px; border: none; border-radius: 4px; flex:1;">Cancelar</button>
-                    </td>
-                </tr>
+            contenedor.innerHTML += `
+                <div class="form-crear-gasto" style="background-color: #ffebee; border: 1px solid #c62828; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="margin-bottom: 8px;">
+                        <label style="font-size: 11px; font-weight: bold; color: #555;">GASTO</label>
+                        <input type="text" id="editNombreGasto_${gasto.id}" value="${gasto.nombre}" style="width: 100%; padding: 6px; box-sizing: border-box; margin-top: 2px;">
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <div style="flex: 1;">
+                            <label style="font-size: 11px; font-weight: bold; color: #555;">RECURRENTE</label>
+                            <select id="editRecurrente_${gasto.id}" style="width: 100%; padding: 6px; margin-top: 2px;">
+                                <option value="si" ${gasto.recurrente === 'si' ? 'selected' : ''}>Sí</option>
+                                <option value="no" ${gasto.recurrente === 'no' ? 'selected' : ''}>No</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 11px; font-weight: bold; color: #555;">MONTO ($)</label>
+                            <input type="number" id="editMontoGasto_${gasto.id}" value="${gasto.monto}" style="width: 100%; padding: 6px; box-sizing: border-box; margin-top: 2px;">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="actualizarGasto('${gasto.id}')" style="background-color: #c62828; color: white; padding: 8px; border: none; border-radius: 4px; flex: 1; font-weight: bold; cursor: pointer;">Guardar</button>
+                        <button onclick="renderizarTablaGastos()" style="background-color: #757575; color: white; padding: 8px; border: none; border-radius: 4px; flex: 1; font-weight: bold; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
             `;
         } else {
-            const estiloFila = (gasto.monto === 0 && esMesActual) ? "background-color: #fff3e0; border-left: 4px solid #e65100;" : "border-bottom: 1px solid #ddd;";
+            // Visualización normal en forma de tarjeta limpia
+            const estiloBorde = (gasto.monto === 0 && esMesActual) ? "background-color: #fff3e0; border-left: 4px solid #e65100;" : "background-color: #ffffff; border: 1px solid #e0e0e0;";
             
             const accionesHTML = esMesActual ? `
-                <button onclick="renderizarTablaGastos('${gasto.id}')" style="background: none; border: none; cursor: pointer;">✏️</button>
-                <button onclick="borrarGasto('${gasto.id}')" style="background: none; border: none; cursor: pointer;">🗑️</button>
+                <button onclick="renderizarTablaGastos('${gasto.id}')" style="background: none; border: none; cursor: pointer; font-size: 16px;" title="Editar">✏️</button>
+                <button onclick="borrarGasto('${gasto.id}')" style="background: none; border: none; cursor: pointer; font-size: 16px;" title="Eliminar">🗑️</button>
             ` : `<span title="Mes cerrado - Solo lectura">🔒</span>`;
 
-            tbody.innerHTML += `
-                <tr style="${estiloFila}">
-                    <td style="padding: 8px;"><strong>${gasto.nombre}</strong> <br><small style="color:#e65100;">${alertaCero}</small></td>
-                    <td class="col-recurrente" style="padding: 8px; text-align: center; font-size: 13px; color: #555;">${gasto.recurrente === "si" ? "🔄 Sí" : "📌 No"}</td>
-                    <td class="col-monto" style="padding: 8px; text-align: right; font-weight: bold; color: #c62828;">- ${formatMoneda(gasto.monto)}</td>
-                    <td class="td-acciones" style="padding: 8px; text-align: center;">${accionesHTML}</td>
-                </tr>
+            contenedor.innerHTML += `
+                <div style="${estiloBorde} padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="font-size: 14px; color: #333;">${gasto.nombre}</strong>
+                        <div style="font-size: 12px; color: #555; margin-top: 2px;">
+                            ${gasto.recurrente === "si" ? "🔄 Recurrente" : "📌 Único"} 
+                            ${alertaCero ? `<span style="color:#e65100; font-weight: bold; margin-left: 6px;">${alertaCero}</span>` : ""}
+                        </div>
+                    </div>
+                    <div style="text-align: right; display: flex; align-items: center; gap: 12px;">
+                        <div>
+                            <span style="font-size: 15px; font-weight: bold; color: #c62828;">- ${formatMoneda(gasto.monto)}</span>
+                        </div>
+                        <div style="display: flex; gap: 4px;">
+                            ${accionesHTML}
+                        </div>
+                    </div>
+                </div>
             `;
         }
     });
