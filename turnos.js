@@ -121,11 +121,16 @@ async function guardarNuevoTurno() {
         return;
     }
 
+    // Unificamos fecha y hora para que el servidor pueda calcular rangos de 24hs
+    const fechaHoraTurno = new Date(`${fecha}T${hora}:00`);
+
     try {
         await db.collection("usuarios").doc(user.uid).collection("turnos").add({
             especialidad: especialidad,
             fecha: fecha,
             hora: hora,
+            fechaHora: firebase.firestore.Timestamp.fromDate(fechaHoraTurno), // Nuevo campo
+            recordatorio24hEnviado: false, // Bandera de control
             fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
         });
     } catch (error) {
@@ -147,11 +152,15 @@ async function actualizarTurno(id) {
         return;
     }
 
+    const fechaHoraTurno = new Date(`${fecha}T${hora}:00`);
+
     try {
         await db.collection("usuarios").doc(user.uid).collection("turnos").doc(id).update({
             especialidad: especialidad,
             fecha: fecha,
-            hora: hora
+            hora: hora,
+            fechaHora: firebase.firestore.Timestamp.fromDate(fechaHoraTurno), // Actualizamos el timestamp
+            recordatorio24hEnviado: false // Reiniciamos por si se cambió de día
         });
     } catch (error) {
         alert("Error al actualizar: " + error.message);
