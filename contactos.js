@@ -87,13 +87,14 @@ function mostrarFormularioMedico() {
     document.getElementById("vistaMedico").style.display = "none";
     document.getElementById("formMedico").style.display = "block";
 
+    const btnCancelar = document.getElementById("btnCancelarMedico");
     if (datosMedicoGuardados) {
-        document.getElementById("btnCancelarMedico").style.display = "inline-block";
+        btnCancelar.style.display = "block";
         document.getElementById("contactoMedicoNombre").value = datosMedicoGuardados.nombre || "";
         document.getElementById("contactoMedicoEmail").value = datosMedicoGuardados.email || "";
         if (itiMedico && datosMedicoGuardados.tel) itiMedico.setNumber(datosMedicoGuardados.tel);
     } else {
-        document.getElementById("btnCancelarMedico").style.display = "none";
+        btnCancelar.style.display = "none";
     }
 }
 

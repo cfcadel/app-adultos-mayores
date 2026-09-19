@@ -258,10 +258,16 @@ li {
         border: none !important;
     }
 }
-/* Arreglo para que intl-tel-input ocupe el 100% del contenedor */
+/* Forzar que el widget de teléfono tome el 100% de ancho */
     .iti {
         width: 100% !important;
     }
+    .iti input {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Enlaces de contacto para Familiar y Médico */
     .link-contacto {
         color: #1565c0;
         text-decoration: none;
@@ -269,6 +275,15 @@ li {
         font-size: 15px;
     }
     .link-contacto:hover {
+        text-decoration: underline;
+    }
+    .link-contacto-medico {
+        color: #2e7d32;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 15px;
+    }
+    .link-contacto-medico:hover {
         text-decoration: underline;
     }
 
