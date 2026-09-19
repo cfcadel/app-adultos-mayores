@@ -80,13 +80,11 @@ function mostrarVistaBloqueadaMedico(data) {
     }
 
     document.getElementById("vistaMedico").style.display = "block";
-    document.getElementById("btnEditarMedico").style.display = "inline-block";
     document.getElementById("formMedico").style.display = "none";
 }
 
 function mostrarFormularioMedico() {
     document.getElementById("vistaMedico").style.display = "none";
-    document.getElementById("btnEditarMedico").style.display = "none";
     document.getElementById("formMedico").style.display = "block";
 
     if (datosMedicoGuardados) {

@@ -118,15 +118,13 @@
     
     <!-- Contacto: Médico de Cabecera -->
     <div style="background-color: #f1f8e9; border: 1px solid #c8e6c9; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h3 style="margin: 0; color: #2e7d32; font-size: 18px; display: flex; align-items: center; gap: 6px;">🩺 Médico de Cabecera</h3>
-            <button id="btnEditarMedico" onclick="activarEdicionMedico()" style="display: none; background: none; border: none; cursor: pointer; font-size: 15px; color: #2e7d32; font-weight: bold;">✏️ Editar</button>
-        </div>
+        <h3 style="margin: 0 0 12px 0; color: #2e7d32; font-size: 18px;">🩺 Médico de Cabecera</h3>
 
-        <!-- VISTA DE LECTURA (BLOQUEADO Y ALINEADO) -->
-        <div id="vistaMedico" style="display: none; background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #c8e6c9; text-align: left; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-            <div style="border-bottom: 1px solid #e8f5e9; padding-bottom: 8px; margin-bottom: 10px;">
+        <!-- VISTA DE LECTURA (MISMA ESTRUCTURA Y BOTÓN ✏️ QUE EN FAMILIARES) -->
+        <div id="vistaMedico" style="display: none; background: #ffffff; border: 1px solid #c8e6c9; border-radius: 8px; padding: 15px; text-align: left; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #c8e6c9; padding-bottom: 8px; margin-bottom: 10px;">
                 <strong style="color: #2e7d32; font-size: 18px;">👨‍⚕️ <span id="txtMedicoNombre">-</span></strong>
+                <button id="btnEditarMedico" onclick="activarEdicionMedico()" style="background:none; border:none; cursor:pointer; font-size: 16px;" title="Editar">✏️</button>
             </div>
             <div style="font-size: 15px; line-height: 1.6;">
                 <p style="margin: 4px 0;"><strong>📞 Teléfono:</strong> <a id="linkMedicoTel" href="#" class="link-contacto">-</a></p>
