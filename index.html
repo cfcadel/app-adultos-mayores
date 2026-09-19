@@ -17,15 +17,17 @@
 </head>
 <body>
 
-    <!-- MENÚ LATERAL -->
-    <div id="miMenuLateral" class="menu-lateral">
-        <a href="javascript:void(0)" class="boton-cerrar" onclick="cerrarMenu()">×</a>
-        <a href="#" onclick="cambiarSeccion('seccionMedicamentos')">💊 Medicinas</a>
-        <a href="#" onclick="cambiarSeccion('seccionFinanzas')">💰 Presupuesto</a>
-        <hr style="border-color: #4caf50; margin: 20px 0 10px 0;">
-        <a href="#" onclick="cambiarSeccion('seccionMiUsuario')">👤 Mi Usuario</a>
-        <a href="#" style="color: #ffcdd2;" onclick="cerrarSesion()">Cerrar Sesión</a>
-    </div>
+<!-- MENÚ LATERAL -->
+<div id="miMenuLateral" class="menu-lateral">
+    <a href="javascript:void(0)" class="boton-cerrar" onclick="cerrarMenu()">×</a>
+    <a href="#" onclick="cambiarSeccion('seccionMedicamentos')">💊 Medicinas</a>
+    <a href="#" onclick="cambiarSeccion('seccionTurnos')">📅 Turnos Médicos</a> <!-- NUEVO -->
+    <a href="#" onclick="cambiarSeccion('seccionContactos')">📞 Contactos</a> <!-- NUEVO -->
+    <a href="#" onclick="cambiarSeccion('seccionFinanzas')">💰 Presupuesto</a>
+    <hr style="border-color: #4caf50; margin: 20px 0 10px 0;">
+    <a href="#" onclick="cambiarSeccion('seccionMiUsuario')">👤 Mi Usuario</a>
+    <a href="#" style="color: #ffcdd2;" onclick="cerrarSesion()">Cerrar Sesión</a>
+</div>
 
     <!-- CABECERA SUPERIOR -->
     <div id="cabeceraApp" class="cabecera" style="display: none;">
@@ -109,6 +111,59 @@
                 </table>
             </div>
         </div>
+        
+        <!-- SECCIÓN 1: CONTACTOS -->
+<div id="seccionContactos" class="tarjeta" style="display: none; max-width: 95%; margin: 20px auto;">
+    <h2>📞 Contactos de Emergencia</h2>
+    
+    <!-- Contacto: Médico de Cabecera -->
+    <div style="background-color: #f1f8e9; border: 1px solid #c8e6c9; border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+        <h3 style="margin-top: 0; color: #2e7d32;">🩺 Médico de Cabecera</h3>
+        <label style="font-size: 13px; font-weight: bold;">Nombre del Médico:</label>
+        <input type="text" id="contactoMedicoNombre" placeholder="Ej: Dr. Carlos Pérez">
+        
+        <label style="font-size: 13px; font-weight: bold; margin-top: 5px; display: block;">Teléfono:</label>
+        <div style="margin-bottom: 10px; width: 100%;">
+            <input type="tel" id="contactoMedicoTel" style="width: 100%;">
+        </div>
+        <button class="btn-azul" onclick="guardarContactoMedico()" style="margin-top: 5px;">Guardar Médico</button>
+    </div>
+
+    <!-- Contacto: Familiar a Cargo -->
+    <div style="background-color: #e3f2fd; border: 1px solid #bbdefb; border-radius: 10px; padding: 15px;">
+        <h3 style="margin-top: 0; color: #1565c0;">👨‍👩‍👧 Familiar a Cargo</h3>
+        <label style="font-size: 13px; font-weight: bold;">Nombre del Familiar / Vínculo:</label>
+        <input type="text" id="contactoFamiliarNombre" placeholder="Ej: María (Hija)">
+        
+        <label style="font-size: 13px; font-weight: bold; margin-top: 5px; display: block;">Teléfono:</label>
+        <div style="margin-bottom: 10px; width: 100%;">
+            <input type="tel" id="contactoFamiliarTel" style="width: 100%;">
+        </div>
+        <button class="btn-azul" onclick="guardarContactoFamiliar()" style="background-color: #1976d2; margin-top: 5px;">Guardar Familiar</button>
+    </div>
+</div>
+
+<!-- SECCIÓN 2: TURNOS MÉDICOS -->
+<div id="seccionTurnos" class="tarjeta" style="display: none; max-width: 95%; margin: 20px auto;">
+    <h2>📅 Mis Turnos Médicos</h2>
+    <button class="btn-azul" style="margin-bottom: 15px;" onclick="mostrarFilaNuevoTurno()">+ Agregar Turno</button>
+    
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+            <thead>
+                <tr style="background-color: #e8f5e9; border-bottom: 2px solid #4caf50;">
+                    <th style="padding: 8px;">ESPECIALIDAD / MÉDICO</th>
+                    <th style="padding: 8px;">FECHA</th>
+                    <th style="padding: 8px;">HORA</th>
+                    <th style="padding: 8px; text-align: center;">ACCIONES</th>
+                </tr>
+            </thead>
+            <tbody id="tablaTurnosBody">
+                <!-- Filas dinámicas de turnos -->
+            </tbody>
+        </table>
+    </div>
+</div>
 
 <!-- SECCIÓN FINANZAS / PRESUPUESTO -->
 <div id="seccionFinanzas" class="tarjeta" style="display: none; max-width: 95%; margin: 20px auto;">
@@ -219,7 +274,9 @@
     <script src="firebase-config.js"></script>
     <script src="autenticacion.js"></script>
     <script src="medicamentos.js"></script>
-    <script src="presupuesto.js"></script> <!-- SCRIPT DE PRESUPUESTO -->
+    <script src="presupuesto.js"></script>
+    <script src="contactos.js"></script>
+    <script src="turnos.js"></script> <!-- SCRIPT DE PRESUPUESTO -->
 
     <script>
         // Inicializar selectores de teléfono con banderas
@@ -261,19 +318,21 @@
         function cerrarMenu() { document.getElementById("miMenuLateral").style.width = "0"; }
         
         function cambiarSeccion(idSeccion) {
-            document.getElementById("seccionInicio").style.display = "none";
-            document.getElementById("seccionMedicamentos").style.display = "none";
-            document.getElementById("seccionFinanzas").style.display = "none";
-            document.getElementById("seccionMiUsuario").style.display = "none";
-            
-            document.getElementById(idSeccion).style.display = "block";
-            
-            if (idSeccion === 'seccionMiUsuario') {
-                cargarDatosPerfil();
-            }
-            
-            cerrarMenu();
-        }
+    document.getElementById("seccionInicio").style.display = "none";
+    document.getElementById("seccionMedicamentos").style.display = "none";
+    document.getElementById("seccionTurnos").style.display = "none"; // NUEVO
+    document.getElementById("seccionContactos").style.display = "none"; // NUEVO
+    document.getElementById("seccionFinanzas").style.display = "none";
+    document.getElementById("seccionMiUsuario").style.display = "none";
+    
+    document.getElementById(idSeccion).style.display = "block";
+    
+    if (idSeccion === 'seccionMiUsuario') {
+        cargarDatosPerfil();
+    }
+    
+    cerrarMenu();
+}
 
         async function solicitarPermisoNotificaciones() {
             if (!('Notification' in window) || !('serviceWorker' in navigator)) {
