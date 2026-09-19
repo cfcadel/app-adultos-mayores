@@ -68,7 +68,7 @@ body {
     padding: 20px;
     border-radius: 15px;
     box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
-    max-width: 400px;
+    max-width: 600px; /* Ampliado para mejor lectura de tablas en PC */
     margin: 20px auto;
     text-align: center;
 }
@@ -142,42 +142,92 @@ li {
 .indicador-invalido { color: #c62828; }
 
 /* ===================================================
-   MEJORAS RESPONSIVE Y UX CORREGIDAS
+   ESTILOS GENERALES PARA TABLAS (PC Y GENERAL)
    =================================================== */
 
-/* Alinear acciones en horizontal (Editar / Eliminar) */
-.td-acciones,
-.acciones-cell {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 12px;
-    align-items: center;
-    justify-content: center;
+table {
+    width: 100% !important;
+    border-collapse: collapse;
+    margin-top: 10px;
+    box-sizing: border-box;
 }
 
-/* Reglas exclusivas para pantallas de Celulares */
+table th {
+    background-color: #e8f5e9;
+    color: #000;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: bold;
+    border-bottom: 2px solid #2e7d32;
+}
+
+table td {
+    padding: 12px;
+    border-bottom: 1px solid #eeeeee;
+    font-size: 14px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+/* Columna de acciones siempre alineada a la derecha */
+th.col-acciones, 
+td.col-acciones {
+    text-align: right !important;
+    white-space: nowrap;
+}
+
+.btn-accion-icono {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 2px 4px;
+    width: auto;
+    display: inline-block;
+    margin: 0 2px;
+}
+
+/* Ocultar detalle condensado de móviles en vista de PC */
+.info-mobile-turnos {
+    display: none;
+}
+
+/* ===================================================
+   RESPONSIVE PARA PANTALLAS DE CELULARES (MOBILE)
+   =================================================== */
+
 @media (max-width: 768px) {
-    /* Ocultar encabezados y columnas secundarias en mobile */
-    table th:nth-child(2),
-    table td:nth-child(2),
-    table th:nth-child(3),
-    table td:nth-child(3) {
+    .tarjeta {
+        margin: 10px;
+        padding: 15px;
+    }
+
+    /* Ocultar columnas intermedias de Fecha y Hora en Mobile */
+    table th.col-fecha,
+    table td.col-fecha,
+    table th.col-hora,
+    table td.col-hora {
         display: none !important;
     }
 
-    /* Forzar que las filas se estiren al 100% del contenedor */
-    table {
-        width: 100% !important;
+    /* Mostrar la fecha/hora combinada bajo el título en Mobile */
+    .info-mobile-turnos {
         display: block !important;
+        font-size: 12px;
+        color: #555555;
+        margin-top: 4px;
+        font-weight: normal;
     }
 
-    tbody {
-        display: block !important;
-        width: 100% !important;
+    /* Ajustar espaciado de celdas en pantallas chicas */
+    table th, table td {
+        padding: 10px 8px !important;
     }
 
-    /* Convertir el formulario en tarjeta vertical de ancho completo */
-    tr.form-crear-medicamento {
+    /* Formulario de creación/edición en tarjeta vertical */
+    tr.form-crear-medicamento,
+    tr.form-crear-gasto {
         display: block !important;
         width: 100% !important;
         background-color: #fffde7;
@@ -188,22 +238,20 @@ li {
         box-sizing: border-box;
     }
 
-    /* Hacer visibles las celdas del formulario apiladas */
-    tr.form-crear-medicamento td {
+    tr.form-crear-medicamento td,
+    tr.form-crear-gasto td {
         display: block !important;
         width: 100% !important;
         padding: 4px 0 !important;
         border: none !important;
     }
 
-    /* Mostrar las etiquetas de los campos en mobile */
     .label-mobile {
         display: block !important;
         margin-bottom: 3px;
         color: #333;
     }
 
-    /* Botones Guardar y Cancelar integrados en paralelo */
     .contenedor-botones-form {
         display: flex !important;
         flex-direction: row !important;
@@ -216,49 +264,6 @@ li {
         margin-bottom: 0;
     }
 
-    /* ===================================================
-   RESPONSIVE PARA SECCIÓN PRESUPUESTO
-   =================================================== */
-
-.tarjeta-presupuesto {
-    background-color: white;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
-    max-width: 500px;
-    margin: 20px auto;
-    text-align: center;
-}
-
-@media (max-width: 768px) {
-    /* Ocultar encabezados secundarios de la tabla en móvil */
-    table th.col-recurrente,
-    table td.col-recurrente,
-    table th.col-monto,
-    table td.col-monto {
-        display: none !important;
-    }
-
-    /* Convertir el formulario de gastos en tarjeta vertical en pantallas chicas */
-    tr.form-crear-gasto {
-        display: block !important;
-        width: 100% !important;
-        background-color: #fffde7;
-        padding: 15px;
-        border: 1px solid #ffe082;
-        border-radius: 10px;
-        margin-bottom: 15px;
-        box-sizing: border-box;
-    }
-
-    tr.form-crear-gasto td {
-        display: block !important;
-        width: 100% !important;
-        padding: 4px 0 !important;
-        border: none !important;
-    }
-}
-/* Forzar que el widget de teléfono tome el 100% de ancho */
     .iti {
         width: 100% !important;
     }
@@ -267,15 +272,11 @@ li {
         box-sizing: border-box !important;
     }
     
-    /* Enlaces de contacto para Familiar y Médico */
     .link-contacto {
         color: #1565c0;
         text-decoration: none;
         font-weight: bold;
         font-size: 15px;
-    }
-    .link-contacto:hover {
-        text-decoration: underline;
     }
     .link-contacto-medico {
         color: #2e7d32;
@@ -283,9 +284,4 @@ li {
         font-weight: bold;
         font-size: 15px;
     }
-    .link-contacto-medico:hover {
-        text-decoration: underline;
-    }
-
-
 }
