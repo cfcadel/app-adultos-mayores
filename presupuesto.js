@@ -1,11 +1,19 @@
 // ==========================================
-// MÓDULO DE PRESUPUESTO MENSUAL (REFINADO)
+// MÓDULO DE PRESUPUESTO MENSUAL (CON HISTORIAL Y BLOQUEO)
 // ==========================================
 
 let gastosGuardados = [];
 let ingresosAdicGuardados = [];
 let ingresoPrincipalActual = 0;
 let saldoAnteriorActual = 0;
+
+let claveMesActual = "";
+let claveMesSeleccionada = "";
+
+// Desuscripciones de Firestore para cambio de mes
+let unsubDocMes = null;
+let unsubGastos = null;
+let unsubIngresos = null;
 
 auth.onAuthStateChanged((user) => {
     if (user) {
@@ -17,10 +25,9 @@ function obtenerInfoMesActual() {
     const ahora = new Date();
     const anio = ahora.getFullYear();
     const mesNumero = String(ahora.getMonth() + 1).padStart(2, '0');
-    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
     return {
         claveMes: `${anio}-${mesNumero}`,
-        nombreMes: `${meses[ahora.getMonth()]} ${anio}`
+        nombreMes: formatearNombreMes(`${anio}-${mesNumero}`)
     };
 }
 
@@ -32,20 +39,63 @@ function obtenerInfoMesAnterior() {
     return { claveMesAnterior: `${anio}-${mesNumero}` };
 }
 
-async function inicializarPresupuesto(uid) {
-    const { claveMes, nombreMes } = obtenerInfoMesActual();
-    document.getElementById("tituloMesActual").innerText = nombreMes;
+function formatearNombreMes(clave) {
+    const [anio, mes] = clave.split("-");
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    return `${meses[parseInt(mes, 10) - 1]} ${anio}`;
+}
 
-    const mesRef = db.collection("usuarios").doc(uid).collection("presupuestos").doc(claveMes);
+async function inicializarPresupuesto(uid) {
+    const { claveMes } = obtenerInfoMesActual();
+    claveMesActual = claveMes;
+    claveMesSeleccionada = claveMes;
+
+    const mesRef = db.collection("usuarios").doc(uid).collection("presupuestos").doc(claveMesActual);
     const docMes = await mesRef.get();
 
-    // Si el mes no existe, ejecutamos la lógica de transición de mes
+    // 1. Si el mes actual no existe en Firestore, realizamos la transición
     if (!docMes.exists) {
-        await realizarTransicionDeMes(uid, claveMes);
+        await realizarTransicionDeMes(uid, claveMesActual);
     }
 
-    // Comenzamos a escuchar los cambios en tiempo real del mes actual
-    escucharMesActual(uid, claveMes);
+    // 2. Cargar el desplegable de historial con todos los meses del usuario
+    await cargarSelectorMeses(uid);
+
+    // 3. Iniciar escucha en tiempo real del mes seleccionado
+    escucharMesSeleccionado(uid, claveMesSeleccionada);
+}
+
+// ==========================================
+// CARGA Y CAMBIO DE MESES (HISTORIAL)
+// ==========================================
+async function cargarSelectorMeses(uid) {
+    const select = document.getElementById("selectorMeses");
+    if (!select) return;
+
+    const snapshot = await db.collection("usuarios").doc(uid).collection("presupuestos").get();
+    let listaClaves = [];
+
+    snapshot.forEach(doc => listaClaves.push(doc.id));
+    
+    // Ordenar descendente (los meses más recientes primero)
+    listaClaves.sort().reverse();
+
+    select.innerHTML = "";
+    listaClaves.forEach(clave => {
+        const option = document.createElement("option");
+        option.value = clave;
+        option.innerText = formatearNombreMes(clave) + (clave === claveMesActual ? " (Actual)" : "");
+        select.appendChild(option);
+    });
+
+    select.value = claveMesSeleccionada;
+}
+
+function cambiarMesSeleccionado(nuevaClave) {
+    if (nuevaClave === claveMesSeleccionada) return;
+    
+    claveMesSeleccionada = nuevaClave;
+    escucharMesSeleccionado(auth.currentUser.uid, claveMesSeleccionada);
 }
 
 // ==========================================
@@ -66,41 +116,30 @@ async function realizarTransicionDeMes(uid, claveMesActual) {
         const ingresoAnt = dataAnt.ingresoPrincipal || 0;
         const saldoArrastradoAnt = dataAnt.saldoAnterior || 0;
 
-        // 1. Calcular Gastos e identificar recurrentes
         let totalGastosAnt = 0;
         const snapshotGastos = await mesAntRef.collection("gastos").get();
         snapshotGastos.forEach(doc => {
             const g = doc.data();
             totalGastosAnt += parseFloat(g.monto) || 0;
-            if (g.recurrente === 'si') {
-                gastosRecurrentesACopiar.push(g.nombre);
-            }
+            if (g.recurrente === 'si') gastosRecurrentesACopiar.push(g.nombre);
         });
 
-        // 2. Calcular Ingresos Adicionales e identificar recurrentes
         let totalIngresosAdicAnt = 0;
         const snapshotIngresos = await mesAntRef.collection("ingresosAdicionales").get();
         snapshotIngresos.forEach(doc => {
             const ing = doc.data();
             totalIngresosAdicAnt += parseFloat(ing.monto) || 0;
-            if (ing.recurrente === 'si') {
-                ingresosRecurrentesACopiar.push(ing.nombre);
-            }
+            if (ing.recurrente === 'si') ingresosRecurrentesACopiar.push(ing.nombre);
         });
 
-        // Saldo Final del mes anterior
         nuevoSaldoAnterior = (ingresoAnt + saldoArrastradoAnt + totalIngresosAdicAnt) - totalGastosAnt;
 
-        // Preguntar al usuario si mantiene su ingreso principal
         if (ingresoAnt > 0) {
-            const mantener = confirm(`¡Comenzó un nuevo mes!\n\nTu Ingreso Principal (Jubilación/Sueldo) anterior fue de $${ingresoAnt}.\n¿Sigue siendo el mismo monto para este mes?`);
-            if (mantener) {
-                nuevoIngresoPrincipal = ingresoAnt;
-            }
+            const mantener = confirm(`¡Comenzó un nuevo mes!\n\nTu Ingreso Principal anterior fue de $${ingresoAnt}.\n¿Sigue siendo el mismo monto para este mes?`);
+            if (mantener) nuevoIngresoPrincipal = ingresoAnt;
         }
     }
 
-    // 3. Crear el nuevo mes usando Batch
     const batch = db.batch();
     const nuevoMesRef = db.collection("usuarios").doc(uid).collection("presupuestos").doc(claveMesActual);
     
@@ -110,7 +149,6 @@ async function realizarTransicionDeMes(uid, claveMesActual) {
         fechaCreacion: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // 4. Copiar los gastos recurrentes con valor $0
     gastosRecurrentesACopiar.forEach(nombreGasto => {
         const nuevoGastoRef = nuevoMesRef.collection("gastos").doc();
         batch.set(nuevoGastoRef, {
@@ -121,7 +159,6 @@ async function realizarTransicionDeMes(uid, claveMesActual) {
         });
     });
 
-    // 5. Copiar los ingresos adicionales recurrentes con valor $0
     ingresosRecurrentesACopiar.forEach(nombreIngreso => {
         const nuevoIngresoRef = nuevoMesRef.collection("ingresosAdicionales").doc();
         batch.set(nuevoIngresoRef, {
@@ -136,18 +173,33 @@ async function realizarTransicionDeMes(uid, claveMesActual) {
 }
 
 // ==========================================
-// ESCUCHAS EN TIEMPO REAL
+// ESCUCHAS EN TIEMPO REAL CON LIMPIEZA
 // ==========================================
-function escucharMesActual(uid, claveMes) {
+function escucharMesSeleccionado(uid, claveMes) {
+    // Cancelar escuchas previas si existían
+    if (unsubDocMes) unsubDocMes();
+    if (unsubGastos) unsubGastos();
+    if (unsubIngresos) unsubIngresos();
+
+    document.getElementById("tituloMesActual").innerText = formatearNombreMes(claveMes);
+
+    const esMesActual = (claveMes === claveMesActual);
+
+    // Ajustes visuales según si es mes actual o historial
+    document.getElementById("bannerModoLectura").style.display = esMesActual ? "none" : "block";
+    document.getElementById("btnEditarIngreso").style.display = esMesActual ? "inline-block" : "none";
+    document.getElementById("btnAgregarIngresoAdic").style.display = esMesActual ? "inline-block" : "none";
+    document.getElementById("btnAgregarGasto").style.display = esMesActual ? "inline-block" : "none";
+
     const mesRef = db.collection("usuarios").doc(uid).collection("presupuestos").doc(claveMes);
 
-    mesRef.onSnapshot((doc) => {
+    unsubDocMes = mesRef.onSnapshot((doc) => {
         if (doc.exists) {
             const data = doc.data();
             ingresoPrincipalActual = data.ingresoPrincipal || 0;
             saldoAnteriorActual = data.saldoAnterior || 0;
 
-            if (ingresoPrincipalActual > 0) {
+            if (ingresoPrincipalActual > 0 || !esMesActual) {
                 renderizarPantallaCompleta();
             } else {
                 renderizarSolicitudIngreso();
@@ -155,19 +207,19 @@ function escucharMesActual(uid, claveMes) {
         }
     });
 
-    mesRef.collection("gastos").orderBy("fechaRegistro", "desc").onSnapshot((snapshot) => {
+    unsubGastos = mesRef.collection("gastos").orderBy("fechaRegistro", "desc").onSnapshot((snapshot) => {
         gastosGuardados = [];
         snapshot.forEach(doc => gastosGuardados.push({ id: doc.id, ...doc.data() }));
-        if (ingresoPrincipalActual > 0) {
+        if (ingresoPrincipalActual > 0 || !esMesActual) {
             renderizarTablaGastos();
             actualizarTotales();
         }
     });
 
-    mesRef.collection("ingresosAdicionales").orderBy("fechaRegistro", "desc").onSnapshot((snapshot) => {
+    unsubIngresos = mesRef.collection("ingresosAdicionales").orderBy("fechaRegistro", "desc").onSnapshot((snapshot) => {
         ingresosAdicGuardados = [];
         snapshot.forEach(doc => ingresosAdicGuardados.push({ id: doc.id, ...doc.data() }));
-        if (ingresoPrincipalActual > 0) {
+        if (ingresoPrincipalActual > 0 || !esMesActual) {
             renderizarTablaIngresosAdic();
             actualizarTotales();
         }
@@ -198,6 +250,8 @@ function renderizarSolicitudIngreso() {
 }
 
 function activarEdicionIngreso() {
+    if (claveMesSeleccionada !== claveMesActual) return;
+
     document.getElementById("contenedorIngreso").style.display = "block";
     document.getElementById("contenedorIngreso").innerHTML = `
         <div style="background-color: #e8f5e9; border: 1px solid #a5d6a7; padding: 12px; border-radius: 10px; margin: 15px 0;">
@@ -239,6 +293,8 @@ function actualizarTotales() {
 }
 
 async function guardarIngresoMensual() {
+    if (claveMesSeleccionada !== claveMesActual) return;
+
     const usuarioActual = auth.currentUser;
     const input = document.getElementById("inputIngresoMensual");
     const valor = parseFloat(input.value);
@@ -248,10 +304,8 @@ async function guardarIngresoMensual() {
         return;
     }
 
-    const { claveMes } = obtenerInfoMesActual();
-
     try {
-        await db.collection("usuarios").doc(usuarioActual.uid).collection("presupuestos").doc(claveMes).set({
+        await db.collection("usuarios").doc(usuarioActual.uid).collection("presupuestos").doc(claveMesActual).set({
             ingresoPrincipal: valor
         }, { merge: true });
     } catch (error) {
@@ -267,7 +321,9 @@ function renderizarTablaIngresosAdic(idEdicion = null) {
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    if (idEdicion === "NUEVO") {
+    const esMesActual = (claveMesSeleccionada === claveMesActual);
+
+    if (idEdicion === "NUEVO" && esMesActual) {
         tbody.innerHTML += `
             <tr style="background-color: #fff9c4;">
                 <td style="padding: 5px;">
@@ -288,9 +344,9 @@ function renderizarTablaIngresosAdic(idEdicion = null) {
     }
 
     ingresosAdicGuardados.forEach((ing) => {
-        const alertaCero = ing.monto === 0 ? "⚠️ Cargar monto" : "";
+        const alertaCero = (ing.monto === 0 && esMesActual) ? "⚠️ Cargar monto" : "";
 
-        if (idEdicion === ing.id) {
+        if (idEdicion === ing.id && esMesActual) {
             tbody.innerHTML += `
                 <tr style="background-color: #e3f2fd;">
                     <td style="padding: 5px;"><input type="text" id="editNombreIngreso_${ing.id}" value="${ing.nombre}"></td>
@@ -308,26 +364,33 @@ function renderizarTablaIngresosAdic(idEdicion = null) {
                 </tr>
             `;
         } else {
-            const estiloFila = ing.monto === 0 ? "background-color: #e3f2fd; border-left: 4px solid #1976d2;" : "border-bottom: 1px solid #ddd;";
+            const estiloFila = (ing.monto === 0 && esMesActual) ? "background-color: #e3f2fd; border-left: 4px solid #1976d2;" : "border-bottom: 1px solid #ddd;";
+            
+            // Acciones: Lápiz y Tacho si es el mes actual; Candado si es historial
+            const accionesHTML = esMesActual ? `
+                <button onclick="renderizarTablaIngresosAdic('${ing.id}')" style="background:none; border:none; cursor:pointer;">✏️</button>
+                <button onclick="borrarIngresoAdicional('${ing.id}')" style="background:none; border:none; cursor:pointer;">🗑️</button>
+            ` : `<span title="Mes cerrado - Solo lectura">🔒</span>`;
 
             tbody.innerHTML += `
                 <tr style="${estiloFila}">
                     <td style="padding: 8px;"><strong>${ing.nombre}</strong> <br><small style="color:#1976d2;">${alertaCero}</small></td>
                     <td class="col-recurrente" style="padding: 8px; text-align: center; font-size: 13px; color: #555;">${ing.recurrente === "si" ? "🔄 Sí" : "📌 No"}</td>
                     <td class="col-monto" style="padding: 8px; text-align: right; font-weight: bold; color: #1976d2;">+ ${formatMoneda(ing.monto)}</td>
-                    <td style="padding: 8px; text-align: center;">
-                        <button onclick="renderizarTablaIngresosAdic('${ing.id}')" style="background:none; border:none; cursor:pointer;">✏️</button>
-                        <button onclick="borrarIngresoAdicional('${ing.id}')" style="background:none; border:none; cursor:pointer;">🗑️</button>
-                    </td>
+                    <td style="padding: 8px; text-align: center;">${accionesHTML}</td>
                 </tr>
             `;
         }
     });
 }
 
-function mostrarFilaNuevoIngresoAdic() { renderizarTablaIngresosAdic("NUEVO"); }
+function mostrarFilaNuevoIngresoAdic() { 
+    if (claveMesSeleccionada === claveMesActual) renderizarTablaIngresosAdic("NUEVO"); 
+}
 
 async function guardarIngresoAdicional() {
+    if (claveMesSeleccionada !== claveMesActual) return;
+
     const usuario = auth.currentUser;
     const nombre = document.getElementById("inputNombreIngreso").value.trim();
     const recurrente = document.getElementById("selectRecurrenteIngreso").value;
@@ -335,13 +398,14 @@ async function guardarIngresoAdicional() {
 
     if (!nombre || isNaN(monto) || monto < 0) return alert("Completa los datos correctamente.");
     
-    const { claveMes } = obtenerInfoMesActual();
-    await db.collection("usuarios").doc(usuario.uid).collection("presupuestos").doc(claveMes).collection("ingresosAdicionales").add({
+    await db.collection("usuarios").doc(usuario.uid).collection("presupuestos").doc(claveMesActual).collection("ingresosAdicionales").add({
         nombre, recurrente, monto, fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
     });
 }
 
 async function actualizarIngresoAdicional(id) {
+    if (claveMesSeleccionada !== claveMesActual) return;
+
     const usuario = auth.currentUser;
     const nombre = document.getElementById(`editNombreIngreso_${id}`).value.trim();
     const recurrente = document.getElementById(`editRecurrenteIngreso_${id}`).value;
@@ -349,16 +413,16 @@ async function actualizarIngresoAdicional(id) {
 
     if (!nombre || isNaN(monto) || monto < 0) return alert("Datos inválidos.");
     
-    const { claveMes } = obtenerInfoMesActual();
-    await db.collection("usuarios").doc(usuario.uid).collection("presupuestos").doc(claveMes).collection("ingresosAdicionales").doc(id).update({ 
+    await db.collection("usuarios").doc(usuario.uid).collection("presupuestos").doc(claveMesActual).collection("ingresosAdicionales").doc(id).update({ 
         nombre, recurrente, monto 
     });
 }
 
 async function borrarIngresoAdicional(id) {
+    if (claveMesSeleccionada !== claveMesActual) return;
     if (!confirm("¿Eliminar este ingreso?")) return;
-    const { claveMes } = obtenerInfoMesActual();
-    await db.collection("usuarios").doc(auth.currentUser.uid).collection("presupuestos").doc(claveMes).collection("ingresosAdicionales").doc(id).delete();
+    
+    await db.collection("usuarios").doc(auth.currentUser.uid).collection("presupuestos").doc(claveMesActual).collection("ingresosAdicionales").doc(id).delete();
 }
 
 
@@ -370,7 +434,9 @@ function renderizarTablaGastos(idEdicion = null) {
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    if (idEdicion === "NUEVO") {
+    const esMesActual = (claveMesSeleccionada === claveMesActual);
+
+    if (idEdicion === "NUEVO" && esMesActual) {
         tbody.innerHTML += `
             <tr class="form-crear-gasto" style="background-color: #fff9c4;">
                 <td style="padding: 5px;"><input type="text" id="inputNombreGasto" placeholder="Ej: Luz"></td>
@@ -387,9 +453,9 @@ function renderizarTablaGastos(idEdicion = null) {
     }
 
     gastosGuardados.forEach((gasto) => {
-        const alertaCero = gasto.monto === 0 ? "⚠️ Cargar monto" : "";
+        const alertaCero = (gasto.monto === 0 && esMesActual) ? "⚠️ Cargar monto" : "";
 
-        if (idEdicion === gasto.id) {
+        if (idEdicion === gasto.id && esMesActual) {
             tbody.innerHTML += `
                 <tr class="form-crear-gasto" style="background-color: #ffebee;">
                     <td style="padding: 5px;"><input type="text" id="editNombreGasto_${gasto.id}" value="${gasto.nombre}"></td>
@@ -407,26 +473,32 @@ function renderizarTablaGastos(idEdicion = null) {
                 </tr>
             `;
         } else {
-            const estiloFila = gasto.monto === 0 ? "background-color: #fff3e0; border-left: 4px solid #e65100;" : "border-bottom: 1px solid #ddd;";
+            const estiloFila = (gasto.monto === 0 && esMesActual) ? "background-color: #fff3e0; border-left: 4px solid #e65100;" : "border-bottom: 1px solid #ddd;";
             
+            const accionesHTML = esMesActual ? `
+                <button onclick="renderizarTablaGastos('${gasto.id}')" style="background: none; border: none; cursor: pointer;">✏️</button>
+                <button onclick="borrarGasto('${gasto.id}')" style="background: none; border: none; cursor: pointer;">🗑️</button>
+            ` : `<span title="Mes cerrado - Solo lectura">🔒</span>`;
+
             tbody.innerHTML += `
                 <tr style="${estiloFila}">
                     <td style="padding: 8px;"><strong>${gasto.nombre}</strong> <br><small style="color:#e65100;">${alertaCero}</small></td>
                     <td class="col-recurrente" style="padding: 8px; text-align: center; font-size: 13px; color: #555;">${gasto.recurrente === "si" ? "🔄 Sí" : "📌 No"}</td>
                     <td class="col-monto" style="padding: 8px; text-align: right; font-weight: bold; color: #c62828;">- ${formatMoneda(gasto.monto)}</td>
-                    <td class="td-acciones" style="padding: 8px; text-align: center;">
-                        <button onclick="renderizarTablaGastos('${gasto.id}')" style="background: none; border: none; cursor: pointer;">✏️</button>
-                        <button onclick="borrarGasto('${gasto.id}')" style="background: none; border: none; cursor: pointer;">🗑️</button>
-                    </td>
+                    <td class="td-acciones" style="padding: 8px; text-align: center;">${accionesHTML}</td>
                 </tr>
             `;
         }
     });
 }
 
-function mostrarFilaNuevoGasto() { renderizarTablaGastos("NUEVO"); }
+function mostrarFilaNuevoGasto() { 
+    if (claveMesSeleccionada === claveMesActual) renderizarTablaGastos("NUEVO"); 
+}
 
 async function guardarNuevoGasto() {
+    if (claveMesSeleccionada !== claveMesActual) return;
+
     const usuario = auth.currentUser;
     const nombre = document.getElementById("inputNombreGasto").value.trim();
     const recurrente = document.getElementById("selectRecurrente").value;
@@ -434,13 +506,14 @@ async function guardarNuevoGasto() {
 
     if (!nombre || isNaN(monto) || monto < 0) return alert("Completa correctamente.");
 
-    const { claveMes } = obtenerInfoMesActual();
-    await db.collection("usuarios").doc(usuario.uid).collection("presupuestos").doc(claveMes).collection("gastos").add({
+    await db.collection("usuarios").doc(usuario.uid).collection("presupuestos").doc(claveMesActual).collection("gastos").add({
         nombre, recurrente, monto, fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
     });
 }
 
 async function actualizarGasto(id) {
+    if (claveMesSeleccionada !== claveMesActual) return;
+
     const usuario = auth.currentUser;
     const nombre = document.getElementById(`editNombreGasto_${id}`).value.trim();
     const recurrente = document.getElementById(`editRecurrente_${id}`).value;
@@ -448,14 +521,14 @@ async function actualizarGasto(id) {
 
     if (!nombre || isNaN(monto) || monto < 0) return alert("Datos inválidos.");
 
-    const { claveMes } = obtenerInfoMesActual();
-    await db.collection("usuarios").doc(usuario.uid).collection("presupuestos").doc(claveMes).collection("gastos").doc(id).update({
+    await db.collection("usuarios").doc(usuario.uid).collection("presupuestos").doc(claveMesActual).collection("gastos").doc(id).update({
         nombre, recurrente, monto
     });
 }
 
 async function borrarGasto(id) {
+    if (claveMesSeleccionada !== claveMesActual) return;
     if (!confirm("¿Deseas eliminar este gasto?")) return;
-    const { claveMes } = obtenerInfoMesActual();
-    await db.collection("usuarios").doc(auth.currentUser.uid).collection("presupuestos").doc(claveMes).collection("gastos").doc(id).delete();
+
+    await db.collection("usuarios").doc(auth.currentUser.uid).collection("presupuestos").doc(claveMesActual).collection("gastos").doc(id).delete();
 }

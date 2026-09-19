@@ -110,19 +110,33 @@
             </div>
         </div>
 
- <!-- SECCIÓN FINANZAS / PRESUPUESTO -->
+<!-- SECCIÓN FINANZAS / PRESUPUESTO -->
 <div id="seccionFinanzas" class="tarjeta" style="display: none; max-width: 95%; margin: 20px auto;">
     <h2>💰 Presupuesto Mensual</h2>
-    <h3 id="tituloMesActual" style="color: #2e7d32; margin-top: -10px;"></h3>
 
-    <!-- 1. Alerta / Carga de Ingreso Principal -->
+    <!-- Cabecera con Título del Mes y Selector de Historial -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+        <h3 id="tituloMesActual" style="color: #2e7d32; margin: 0;"></h3>
+        <div style="display: flex; align-items: center; gap: 5px;">
+            <label for="selectorMeses" style="font-size: 13px; font-weight: bold; color: #555;">Historial:</label>
+            <select id="selectorMeses" onchange="cambiarMesSeleccionado(this.value)" style="padding: 6px 10px; font-size: 14px; border-radius: 6px; border: 1px solid #4caf50; background-color: #fff; cursor: pointer;">
+                <!-- Se llena dinámicamente con los meses de Firebase -->
+            </select>
+        </div>
+    </div>
+
+    <!-- Banner Informativo para Meses Anteriores (Modo Solo Lectura) -->
+    <div id="bannerModoLectura" style="display: none; background-color: #e0f7fa; border: 1px solid #00acc1; color: #006064; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; text-align: center;">
+        🔒 <strong>Modo Historial:</strong> Estás viendo los registros de un mes anterior. Las opciones de edición están desactivadas.
+    </div>
+
+    <!-- 1. Alerta / Carga de Ingreso Principal (Solo para mes actual sin cargar) -->
     <div id="contenedorIngreso"></div>
 
     <!-- 2. Resumen del Estado Financiero -->
     <div id="contenedorResumen" style="display: none;" class="caja-resumen">
-        <!-- Se quitó el font-size pequeño para igualar la lectura al Ingreso Principal -->
         <p style="color: #555;"><strong>Saldo Mes Anterior:</strong> <span id="txtSaldoAnterior">$0</span></p>
-        <p><strong>Ingreso Principal:</strong> <span id="txtIngreso">$0</span> <button onclick="activarEdicionIngreso()" style="background:none; border:none; cursor:pointer;" title="Editar ingreso">✏️</button></p>
+        <p><strong>Ingreso Principal:</strong> <span id="txtIngreso">$0</span> <button id="btnEditarIngreso" onclick="activarEdicionIngreso()" style="background:none; border:none; cursor:pointer;" title="Editar ingreso">✏️</button></p>
         <p style="color: #1976d2;"><strong>Ingresos Adicionales:</strong> <span id="txtTotalIngresosAdic">$0</span></p>
         <p style="color: #c62828;"><strong>Total Gastos:</strong> <span id="txtTotalGastos">$0</span></p>
         <hr style="border: 0.5px solid #a5d6a7;">
@@ -134,7 +148,7 @@
         <!-- 3. Tabla de Ingresos Adicionales -->
         <div style="margin-top: 25px; background-color: #e3f2fd; padding: 10px; border-radius: 10px; border: 1px solid #bbdefb;">
             <h4 style="margin-top: 0; color: #1565c0;">📈 Ingresos Adicionales</h4>
-            <button onclick="mostrarFilaNuevoIngresoAdic()" class="btn-azul" style="background-color: #1976d2;">+ Agregar Ingreso Extra</button>
+            <button id="btnAgregarIngresoAdic" onclick="mostrarFilaNuevoIngresoAdic()" class="btn-azul" style="background-color: #1976d2;">+ Agregar Ingreso Extra</button>
 
             <div style="overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px;">
@@ -154,7 +168,7 @@
         <!-- 4. Tabla de Gastos -->
         <div style="margin-top: 25px;">
             <h4 style="margin-top: 0; color: #c62828;">📉 Mis Gastos</h4>
-            <button onclick="mostrarFilaNuevoGasto()" class="btn-azul" style="background-color: #c62828;">+ Agregar Gasto</button>
+            <button id="btnAgregarGasto" onclick="mostrarFilaNuevoGasto()" class="btn-azul" style="background-color: #c62828;">+ Agregar Gasto</button>
 
             <div style="overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px;">
