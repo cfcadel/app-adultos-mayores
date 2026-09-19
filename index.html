@@ -198,17 +198,17 @@
     <button class="btn-azul" style="margin-bottom: 15px;" onclick="mostrarFilaNuevoTurno()">+ Agregar Turno</button>
     
     <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+        <table>
             <thead>
-                <tr style="background-color: #e8f5e9; border-bottom: 2px solid #4caf50;">
-                    <th style="padding: 8px;">ESPECIALIDAD / MÉDICO</th>
-                    <th style="padding: 8px;">FECHA</th>
-                    <th style="padding: 8px;">HORA</th>
-                    <th style="padding: 8px; text-align: center;">ACCIONES</th>
+                <tr>
+                    <th class="col-especialidad">ESPECIALIDAD / MÉDICO</th>
+                    <th class="col-fecha">FECHA</th>
+                    <th class="col-hora">HORA</th>
+                    <th class="col-acciones">ACCIONES</th>
                 </tr>
             </thead>
             <tbody id="tablaTurnosBody">
-                <!-- Filas dinámicas de turnos -->
+                <!-- Filas dinámicas generadas por renderizarTablaTurnos() -->
             </tbody>
         </table>
     </div>

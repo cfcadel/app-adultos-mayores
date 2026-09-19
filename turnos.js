@@ -28,87 +28,116 @@ function escucharTurnos(uid) {
     });
 }
 
-// Renderizar la lista de turnos (Formato vertical responsive)
+// Renderizar la lista de turnos (Formato tabulado en PC y condensado en Mobile)
 function renderizarTablaTurnos(idEdicion = null) {
     const contenedor = document.getElementById("tablaTurnosBody");
     if (!contenedor) return;
     contenedor.innerHTML = "";
 
-    // Formulario para agregar un nuevo turno
+    // 1. FORMULARIO PARA AGREGAR UN NUEVO TURNO
     if (idEdicion === "NUEVO") {
         contenedor.innerHTML += `
-            <div style="background-color: #fffde7; border: 1px solid #fff59d; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left;">
-                <div style="margin-bottom: 10px;">
-                    <label style="font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Especialidad / Médico:</label>
-                    <input type="text" id="inputEspecialidadTurno" placeholder="Ej: Cardiología / Dr. Gómez" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
-                </div>
-                
-                <div style="margin-bottom: 10px;">
-                    <label style="font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Fecha del Turno:</label>
-                    <input type="date" id="inputFechaTurno" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <label style="font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Hora del Turno:</label>
-                    <input type="time" id="inputHoraTurno" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
-                </div>
-                
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="guardarNuevoTurno()" style="flex: 1; background-color: #2e7d32; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Guardar</button>
-                    <button onclick="renderizarTablaTurnos()" style="flex: 1; background-color: #757575; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer;">Cancelar</button>
-                </div>
-            </div>
+            <tr class="fila-formulario">
+                <td colspan="4" style="padding: 10px 0;">
+                    <div style="background-color: #fffde7; border: 1px solid #fff59d; border-radius: 12px; padding: 15px; text-align: left;">
+                        <div style="margin-bottom: 10px;">
+                            <label style="font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Especialidad / Médico:</label>
+                            <input type="text" id="inputEspecialidadTurno" placeholder="Ej: Cardiología / Dr. Gómez" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 10px;">
+                            <label style="font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Fecha del Turno:</label>
+                            <input type="date" id="inputFechaTurno" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Hora del Turno:</label>
+                            <input type="time" id="inputHoraTurno" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="guardarNuevoTurno()" style="flex: 1; background-color: #2e7d32; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Guardar</button>
+                            <button onclick="renderizarTablaTurnos()" style="flex: 1; background-color: #757575; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer;">Cancelar</button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
         `;
     }
 
+    // 2. SI NO HAY TURNOS REGISTRADOS
     if (turnosGuardados.length === 0 && idEdicion !== "NUEVO") {
         contenedor.innerHTML = `
-            <div style="text-align: center; padding: 20px; color: #757575;">
-                No tienes turnos pendientes programados.
-            </div>
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 20px; color: #757575;">
+                    No tienes turnos pendientes programados.
+                </td>
+            </tr>
         `;
         return;
     }
 
+    // 3. RECORRER Y RENDERIZAR CADA TURNO
     turnosGuardados.forEach((turno) => {
         if (idEdicion === turno.id) {
             // Formulario en modo edición
             contenedor.innerHTML += `
-                <div style="background-color: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left;">
-                    <div style="margin-bottom: 10px;">
-                        <label style="font-weight: bold; color: #2e7d32; display: block; margin-bottom: 4px;">Especialidad / Médico:</label>
-                        <input type="text" id="editEspecialidadTurno_${turno.id}" value="${turno.especialidad}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
-                    </div>
-                    
-                    <div style="margin-bottom: 10px;">
-                        <label style="font-weight: bold; color: #2e7d32; display: block; margin-bottom: 4px;">Fecha del Turno:</label>
-                        <input type="date" id="editFechaTurno_${turno.id}" value="${turno.fecha}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
-                    </div>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <label style="font-weight: bold; color: #2e7d32; display: block; margin-bottom: 4px;">Hora del Turno:</label>
-                        <input type="time" id="editHoraTurno_${turno.id}" value="${turno.hora}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
-                    </div>
-                    
-                    <div style="display: flex; gap: 10px;">
-                        <button onclick="actualizarTurno('${turno.id}')" style="flex: 1; background-color: #2e7d32; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Guardar</button>
-                        <button onclick="renderizarTablaTurnos()" style="flex: 1; background-color: #757575; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer;">Cancelar</button>
-                    </div>
-                </div>
+                <tr class="fila-formulario">
+                    <td colspan="4" style="padding: 10px 0;">
+                        <div style="background-color: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 12px; padding: 15px; text-align: left;">
+                            <div style="margin-bottom: 10px;">
+                                <label style="font-weight: bold; color: #2e7d32; display: block; margin-bottom: 4px;">Especialidad / Médico:</label>
+                                <input type="text" id="editEspecialidadTurno_${turno.id}" value="${turno.especialidad}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 10px;">
+                                <label style="font-weight: bold; color: #2e7d32; display: block; margin-bottom: 4px;">Fecha del Turno:</label>
+                                <input type="date" id="editFechaTurno_${turno.id}" value="${turno.fecha}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="font-weight: bold; color: #2e7d32; display: block; margin-bottom: 4px;">Hora del Turno:</label>
+                                <input type="time" id="editHoraTurno_${turno.id}" value="${turno.hora}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="actualizarTurno('${turno.id}')" style="flex: 1; background-color: #2e7d32; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Guardar</button>
+                                <button onclick="renderizarTablaTurnos()" style="flex: 1; background-color: #757575; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer;">Cancelar</button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
             `;
         } else {
-            // Tarjeta de turno guardado
+            // Fila de turno guardado (4 columnas en PC, 2 en Mobile gracias al CSS)
             contenedor.innerHTML += `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid #eee; text-align: left;">
-                    <div>
-                        <strong style="font-size: 16px; color: #222;">${turno.especialidad}</strong><br>
-                        <span style="font-size: 14px; color: #555;">📅 ${formatearFechaLectura(turno.fecha)} &nbsp;|&nbsp; ⏰ ${turno.hora} hs</span>
-                    </div>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <button onclick="renderizarTablaTurnos('${turno.id}')" style="background:none; border:none; cursor:pointer; font-size: 18px;" title="Editar">✏️</button>
-                        <button onclick="borrarTurno('${turno.id}')" style="background:none; border:none; cursor:pointer; font-size: 18px;" title="Eliminar">🗑️</button>
-                    </div>
-                </div>
+                <tr>
+                    <!-- Columna 1: Especialidad / Médico -->
+                    <td class="col-especialidad">
+                        <strong style="font-size: 15px; color: #222;">${turno.especialidad}</strong>
+                        
+                        <!-- Fecha y Hora combinadas VISIBLES SOLO EN MOBILE -->
+                        <div class="info-mobile-turnos">
+                            📅 ${formatearFechaLectura(turno.fecha)} &nbsp;|&nbsp; ⏰ ${turno.hora} hs
+                        </div>
+                    </td>
+
+                    <!-- Columna 2: Fecha (Visible solo en PC) -->
+                    <td class="col-fecha">
+                        ${formatearFechaLectura(turno.fecha)}
+                    </td>
+
+                    <!-- Columna 3: Hora (Visible solo en PC) -->
+                    <td class="col-hora">
+                        ${turno.hora} hs
+                    </td>
+
+                    <!-- Columna 4: Acciones -->
+                    <td class="col-acciones">
+                        <button onclick="renderizarTablaTurnos('${turno.id}')" class="btn-accion-icono" title="Editar">✏️</button>
+                        <button onclick="borrarTurno('${turno.id}')" class="btn-accion-icono" title="Eliminar">🗑️</button>
+                    </td>
+                </tr>
             `;
         }
     });
