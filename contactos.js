@@ -192,7 +192,7 @@ function escucharFamiliares(uid) {
         itiEdicionMap = {};
 
         if (snapshot.empty) {
-            contenedor.innerHTML = `<p style="color: #757575; font-size: 14px; text-align: center; margin: 10px 0;">No tienes familiares registrados aún.</p>`;
+            contenedor.innerHTML = `<p style="color: #757575; font-size: 14px; text-align: left; margin: 10px 0;">No tienes familiares registrados aún.</p>`;
             return;
         }
 
@@ -208,7 +208,7 @@ function escucharFamiliares(uid) {
                 : `<span style="color:#757575;">No registrado</span>`;
 
             contenedor.innerHTML += `
-                <div id="cardFamiliar_${fam.id}" style="background-color: #ffffff; border: 1px solid #bbdefb; border-radius: 8px; padding: 15px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <div id="cardFamiliar_${fam.id}" style="background-color: #ffffff; border: 1px solid #bbdefb; border-radius: 8px; padding: 15px; margin-bottom: 12px; text-align: left; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                     <div id="viewFamiliar_${fam.id}">
                         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e0e0e0; padding-bottom: 8px; margin-bottom: 10px;">
                             <strong style="color: #1565c0; font-size: 18px;">👤 ${fam.nombre}</strong>
@@ -223,7 +223,7 @@ function escucharFamiliares(uid) {
                         </div>
                     </div>
 
-                    <div id="editFamiliar_${fam.id}" style="display: none;">
+                    <div id="editFamiliar_${fam.id}" style="display: none; text-align: left;">
                         <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 2px;">Nombre/Vínculo:</label>
                         <input type="text" id="editFamNombre_${fam.id}" value="${fam.nombre}" style="width: 100%; margin-bottom: 8px; padding: 6px; box-sizing: border-box;">
 
