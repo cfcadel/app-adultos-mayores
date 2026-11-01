@@ -285,3 +285,26 @@ td.col-acciones {
         font-size: 15px;
     }
 }
+
+/* ===================================================
+   BOTÓN CAFECITO
+   =================================================== */
+.btn-cafecito {
+    background-color: #ff9800;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 10px;
+    display: inline-block;
+    text-decoration: none;
+    font-weight: bold;
+    box-sizing: border-box;
+    text-align: center;
+}
+.btn-cafecito:hover {
+    background-color: #f57c00;
+}
